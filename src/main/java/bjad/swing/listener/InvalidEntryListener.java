@@ -1,8 +1,8 @@
-package ca.bjad.util.ui.listener;
+package bjad.swing.listener;
 
 import java.util.EventListener;
 
-import ca.bjad.util.ui.AbstractRestrictiveTextField;
+import bjad.swing.AbstractRestrictiveTextField;
 
 /**
  * Listener interface which will be triggered if invalid

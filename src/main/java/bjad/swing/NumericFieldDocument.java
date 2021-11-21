@@ -1,11 +1,11 @@
-package ca.bjad.util.ui;
+package bjad.swing;
 
 import java.math.BigDecimal;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
-import ca.bjad.util.ui.listener.InvalidEntryListener.InvalidatedReason;
+import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
 
 /**
  * Numeric value document that will allow the integer 
@@ -61,6 +61,17 @@ class NumericFieldDocument extends PlainDocument
       this.allowNegatives = allowNegatives;
    }
 
+   /**
+    * Verifys the content of the string passed to check that 
+    * the input is valid based on the allow negatives and
+    * allow decimals settings. 
+    * 
+    * @param newTextValue
+    *    The text to verify
+    * @return
+    *    The value of the text with the modifications needed for 
+    *    verification, or null if bad input is found.
+    */
    private BigDecimal checkForDefaultValues(String newTextValue)
    {
       BigDecimal val = null;
@@ -91,24 +102,38 @@ class NumericFieldDocument extends PlainDocument
       return val;
    }
    
+   /**
+    * Verifying the value in the field once all the invalid character 
+    * input is found. 
+    * 
+    * @param valToCheck
+    *    The value to check
+    * @return
+    *    The value within the field if the input is valid with the 
+    *    rules in the field, or null if the input breaks the 
+    *    validation rules. 
+    */
    private BigDecimal verifyRangeInformation(BigDecimal valToCheck)
    {
       BigDecimal retValue = valToCheck;
           
       if (valToCheck != null)
       {
+         // Invalid input due to negatives not being allowed.
          if (!allowNegatives && BigDecimal.ZERO.compareTo(valToCheck) == 1)
          {
             retValue = null;
             owningField.fireInvalidEntryListeners(InvalidatedReason.NEGATIVE_VALUE, valToCheck.toPlainString());
          }
-         
+         // Invalid input due to the amount being more than the max amount setting. 
          if (maximumValue != null && maximumValue.compareTo(valToCheck) == -1)
          {
             retValue = null;
             owningField.fireInvalidEntryListeners(InvalidatedReason.MAXIMUM_VALUE_PASSED, valToCheck.toPlainString());
          }
          
+         // Check for invalid input due to the number of decimal places
+         // of the value being more than the max allowed in the field. 
          if (allowDecimals && numberOfDecimalPlaces > 0)
          {
             String str = valToCheck.toPlainString();            
@@ -116,7 +141,6 @@ class NumericFieldDocument extends PlainDocument
             if (decimalPosition != 0 && !str.endsWith("."))
             {
                String decimalPortion = str.substring(decimalPosition);
-               System.out.println(decimalPortion);
                
                if (decimalPortion.length() > numberOfDecimalPlaces)
                {
@@ -169,6 +193,19 @@ class NumericFieldDocument extends PlainDocument
       return verifyRangeInformation(val);
    }
    
+   /**
+    * Overrides the super class's insert string so it will 
+    * filter out bad characters within the text field if 
+    * entered by the user by typing or by copying and 
+    * pasting from the clipboard.
+    * 
+    * @param offs 
+    *    the starting offset >= 0
+    * @param str 
+    *    the string to insert; does nothing with null/empty strings
+    * @param a 
+    *    the attributes for the inserted content
+    */
    @Override
    public void insertString(int offs, String str, AttributeSet a) throws BadLocationException 
    {

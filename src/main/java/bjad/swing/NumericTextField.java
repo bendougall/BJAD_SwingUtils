@@ -1,4 +1,4 @@
-package ca.bjad.util.ui;
+package bjad.swing;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

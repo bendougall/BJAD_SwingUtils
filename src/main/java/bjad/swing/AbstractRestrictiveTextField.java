@@ -1,8 +1,9 @@
-package ca.bjad.util.ui;
+package bjad.swing;
 
 import javax.swing.JTextField;
-import ca.bjad.util.ui.listener.InvalidEntryListener;
-import ca.bjad.util.ui.listener.InvalidEntryListener.InvalidatedReason;
+
+import bjad.swing.listener.InvalidEntryListener;
+import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
 
 /**
  * Base class for restrictive text fields, such as

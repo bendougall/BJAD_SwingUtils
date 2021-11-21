@@ -1,4 +1,4 @@
-package ca.bjad.util.ui;
+package bjad.swing;
 
 import java.awt.Color;
 import java.awt.Point;
