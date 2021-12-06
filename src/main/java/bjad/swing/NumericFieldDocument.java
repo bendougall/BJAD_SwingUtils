@@ -213,17 +213,25 @@ class NumericFieldDocument extends PlainDocument
       sb.insert(offs, str);            
       String newTextValue = sb.toString();
       
-      // Empty string, pass it up to the super class to place in the 
-      // field.
+      // Empty string, pass it up to the super class to place in the field.
       if (newTextValue.isEmpty())
       {
          super.insertString(offs, str, a);
       }
       
-      BigDecimal val = verifyContents(newTextValue);
-      if (val != null)
+      // If the new string contains a decimal point but decimals
+      // are not allowed, prevent the text entry.
+      if (!allowDecimals && str.contains("."))
       {
-         super.insertString(offs, str, a);
+         owningField.fireInvalidEntryListeners(InvalidatedReason.NON_INTEGER, newTextValue);
+      }
+      else
+      {
+         BigDecimal val = verifyContents(newTextValue);
+         if (val != null)
+         {
+            super.insertString(offs, str, a);
+         }
       }
    }
 }
