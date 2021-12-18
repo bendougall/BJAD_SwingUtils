@@ -5,12 +5,13 @@ import java.util.Date;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
+import bjad.swing.BJADFieldPositionHelper;
 import bjad.swing.DateTimeTextField;
 import bjad.swing.NumericTextField;
+import bjad.swing.TextField;
 
 /**
  * Quick Test UI Application for the
@@ -24,10 +25,15 @@ public class BJADTestApp extends JFrame
 {
    private static final long serialVersionUID = -5205067524615288143L;
 
+   /**
+    * Constructor, creating the window and the controls
+    * and wiring the frame to close when the close button
+    * is pressed. 
+    */
    public BJADTestApp()
    {
       super("BJAD UI Test App");
-      setSize(800, 315);
+      setSize(800, 380);
       setDefaultCloseOperation(EXIT_ON_CLOSE);
       setContentPane(createContentPane());
    }
@@ -44,6 +50,11 @@ public class BJADTestApp extends JFrame
       numField.setName("IntField");
       numField.setBounds(220, 10, 400, 25);
       pane.add(numField);
+      
+      // Wire the int field show the user can use the arrow keys to position 
+      // the label and the field on the screen, and use CTRL+Arrow Keys to 
+      // resize the label and text field. 
+      new BJADFieldPositionHelper(numField, lbl, numField);
       
       lbl = new JLabel("Decimal Field:");
       lbl.setName("DecFieldLabel");
@@ -62,6 +73,7 @@ public class BJADTestApp extends JFrame
       
       numField = NumericTextField.newMoneyField();
       numField.setName("MoneyField");
+      numField.setPlaceholderText("Decimal Field but with 2 decimal places maximum.");
       numField.setBounds(220, 70, 400, 25);
       pane.add(numField);
       
@@ -85,7 +97,7 @@ public class BJADTestApp extends JFrame
       lbl.setBounds(10, 20, 200, 25);
       innerPane.add(lbl);
       
-      JTextField txtField = new JTextField("No Name TextField");
+      TextField txtField = new TextField("No Name TextField");
       txtField.setBounds(220, 20, 400, 25);
       innerPane.add(txtField);
       
@@ -93,7 +105,7 @@ public class BJADTestApp extends JFrame
       lbl.setBounds(10, 50, 200, 25);
       innerPane.add(lbl);
       
-      txtField = new JTextField("Disabled TextField");
+      txtField = new TextField("Disabled TextField");
       txtField.setName("DisabledField");
       txtField.setEnabled(false);
       txtField.setBounds(220, 50, 400, 25);
@@ -103,15 +115,32 @@ public class BJADTestApp extends JFrame
       lbl.setBounds(10, 80, 200, 25);
       innerPane.add(lbl);
       
-      txtField = new JTextField("NonEditabled TextField");
+      txtField = new TextField("NonEditable TextField");
       txtField.setName("NonEditableField");
       txtField.setEditable(false);
       txtField.setBounds(220, 80, 400, 25);
       innerPane.add(txtField);
       
+      JPanel instructions = new JPanel(null, true);
+      instructions.setBounds(10, 270, 760, 50);
+      instructions.setBorder(new TitledBorder("Instructions"));
+      pane.add(instructions);
+      
+      lbl = new JLabel("Use the arrow keys while focused in the int field to move its label and the field itself.");
+      lbl.setBounds(10, 15, 750, 30);
+      instructions.add(lbl);
+      
       return pane;
    }
    
+   /**
+    * Launching point of the application, showing the 
+    * frame to the user. 
+    * 
+    * @param args
+    *    Command line arguments are not used for this 
+    *    application. 
+    */
    public static void main(String[] args)
    {
       SwingUtilities.invokeLater(new Runnable()
