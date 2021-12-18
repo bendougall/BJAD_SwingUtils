@@ -90,8 +90,15 @@ class NumericFieldDocument extends PlainDocument
       else if (newTextValue.endsWith("."))
       {
          if (allowDecimals)
-         {            
-            val = new BigDecimal(newTextValue + "1");
+         {         
+            try
+            {
+               val = new BigDecimal(newTextValue + "1");
+            }
+            catch (NumberFormatException ex)
+            {
+               owningField.fireInvalidEntryListeners(InvalidatedReason.TOO_MANY_DECIMALS, newTextValue);
+            }
          }
          else
          {
