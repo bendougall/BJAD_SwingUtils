@@ -2,6 +2,7 @@ package bjad.swing;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -48,6 +49,15 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
     * when focus is gained in the text box. 
     */
    protected boolean selectAllOnFocus = true;
+   
+   /**
+    * Default constructor, adding the focus listener to the 
+    * text field.
+    */
+   public AbstractRestrictiveTextField()
+   {
+      addFocusListener(this);
+   }
    
    /**
     * Adds the invalid entry listener to the field so it will
@@ -207,10 +217,15 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
          g.setColor(placeholderColor);
          g.setFont(placeholderFont);
          
+         FontMetrics fm = g.getFontMetrics();
+         int heightestChar = fm.getHeight();
+         int midPoint = (int)((getHeight() - getInsets().top + 1 - getInsets().bottom + 1) / 2.0);
+         int yPos = (int)((midPoint / 2.0) + (heightestChar / 2.0) + 3);
+         
          g.drawString(
                placeholderText, 
                getInsets().left + 1, 
-               pG.getFontMetrics().getMaxAscent() + getInsets().top + 1);
+               yPos);
       }
    }
    
@@ -284,6 +299,17 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    @Override
    public void focusLost(FocusEvent e)
    {
-      this.setText(this.getText().trim());
+      this.setText(this.getText().trim()); // Always get rid of any extra spaces
+      onFocusLost(); // Run the method in case there is custom focus lost logic.
+   }
+   
+   /** 
+    * Method to execute when focus is lost from the field
+    * but without passing the FocusEvent around to avoid
+    * useless imports.
+    */
+   protected void onFocusLost()
+   {
+      ; // do nothing. 
    }
 }

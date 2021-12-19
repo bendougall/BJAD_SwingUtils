@@ -33,7 +33,7 @@ public class BJADTestApp extends JFrame
    public BJADTestApp()
    {
       super("BJAD UI Test App");
-      setSize(800, 380);
+      setSize(700, 410);
       setDefaultCloseOperation(EXIT_ON_CLOSE);
       setContentPane(createContentPane());
    }
@@ -48,7 +48,9 @@ public class BJADTestApp extends JFrame
       
       NumericTextField numField = NumericTextField.newIntegerFieldNoLimits();
       numField.setName("IntField");
-      numField.setBounds(220, 10, 400, 25);
+      numField.setBounds(220, 10, 450, 26);
+      numField.setPlaceholderFont(numField.getPlaceholderFont().deriveFont(14.0f));
+      numField.setPlaceholderText("Arrow keys to position, CTRL+Arrow keys to size.");
       pane.add(numField);
       
       // Wire the int field show the user can use the arrow keys to position 
@@ -63,7 +65,7 @@ public class BJADTestApp extends JFrame
       
       numField = NumericTextField.newDecimalFieldNoLimits();
       numField.setName("DecField");
-      numField.setBounds(220, 40, 400, 25);
+      numField.setBounds(220, 40, 450, 25);
       pane.add(numField);
       
       lbl = new JLabel("Money Field:");
@@ -74,7 +76,7 @@ public class BJADTestApp extends JFrame
       numField = NumericTextField.newMoneyField();
       numField.setName("MoneyField");
       numField.setPlaceholderText("Decimal Field but with 2 decimal places maximum.");
-      numField.setBounds(220, 70, 400, 25);
+      numField.setBounds(220, 70, 450, 25);
       pane.add(numField);
       
       lbl = new JLabel("Date Field:");
@@ -84,12 +86,25 @@ public class BJADTestApp extends JFrame
       
       DateTimeTextField dtField = new DateTimeTextField(new Date());
       dtField.setName("dtField");
-      dtField.setBounds(220, 100, 400, 25);
+      dtField.setBounds(220, 100, 450, 25);
       pane.add(dtField);
+      
+      lbl = new JLabel("'A-E' Field:");
+      lbl.setName("AbcdeFieldLabel");
+      lbl.setBounds(10, 130, 200, 25);
+      pane.add(lbl);
+      
+      TextField abcdeField = new TextField();
+      abcdeField.setName("abcdeField");
+      abcdeField.addAllowableCharacter('a');
+      abcdeField.addAllowableCharactersFromString("bcdeABCDE");
+      abcdeField.setBounds(220, 130, 450, 25);
+      abcdeField.setPlaceholderText("Only characters AAbBcCdDeE are allowed");
+      pane.add(abcdeField);
       
       JPanel innerPane = new JPanel(null, true);
       innerPane.setName("InnerPane");
-      innerPane.setBounds(10, 140, 760, 120);
+      innerPane.setBounds(10, 170, 660, 120);
       innerPane.setBorder(new TitledBorder("Inner Panel"));
       pane.add(innerPane);
       
@@ -98,7 +113,7 @@ public class BJADTestApp extends JFrame
       innerPane.add(lbl);
       
       TextField txtField = new TextField("No Name TextField");
-      txtField.setBounds(220, 20, 400, 25);
+      txtField.setBounds(220, 20, 425, 25);
       innerPane.add(txtField);
       
       lbl = new JLabel("Disabled Field Label");
@@ -108,7 +123,7 @@ public class BJADTestApp extends JFrame
       txtField = new TextField("Disabled TextField");
       txtField.setName("DisabledField");
       txtField.setEnabled(false);
-      txtField.setBounds(220, 50, 400, 25);
+      txtField.setBounds(220, 50, 425, 25);
       innerPane.add(txtField);
       
       lbl = new JLabel("Non-editable Field Label");
@@ -118,16 +133,16 @@ public class BJADTestApp extends JFrame
       txtField = new TextField("NonEditable TextField");
       txtField.setName("NonEditableField");
       txtField.setEditable(false);
-      txtField.setBounds(220, 80, 400, 25);
+      txtField.setBounds(220, 80, 425, 25);
       innerPane.add(txtField);
       
       JPanel instructions = new JPanel(null, true);
-      instructions.setBounds(10, 270, 760, 50);
+      instructions.setBounds(10, 300, 660, 50);
       instructions.setBorder(new TitledBorder("Instructions"));
       pane.add(instructions);
       
       lbl = new JLabel("Use the arrow keys while focused in the int field to move its label and the field itself.");
-      lbl.setBounds(10, 15, 750, 30);
+      lbl.setBounds(10, 15, 640, 30);
       instructions.add(lbl);
       
       return pane;

@@ -45,6 +45,8 @@ public class TextField extends AbstractRestrictiveTextField
     */
    public TextField(String text)
    {
+      super();
+      
       doc = new AllowableCharacterDocument(this);
       setDocument(doc);
       
@@ -206,7 +208,7 @@ class AllowableCharacterDocument extends PlainDocument
                sb.insert(offs, str);            
                String newTextValue = sb.toString();
                
-               owningField.fireInvalidEntryListeners(InvalidatedReason.CHARACTER_NOT_ALLOWED, "\'" + c+ "\' within " + newTextValue);
+               owningField.fireInvalidEntryListeners(InvalidatedReason.INVALID_CHARACTER, "\'" + c+ "\' within " + newTextValue);
                return;
             }
          }

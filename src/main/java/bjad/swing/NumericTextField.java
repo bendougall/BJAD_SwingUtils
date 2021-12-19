@@ -2,6 +2,7 @@ package bjad.swing;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 /**
  * Text field for swing applications that will
@@ -22,6 +23,13 @@ public class NumericTextField extends AbstractRestrictiveTextField
    NumericFieldDocument numDoc;
    
    /**
+    * Flag representing if the field is for money, so we can format the 
+    * amount when focus is lost to include the decimal and BOTH decimal 
+    * places. 
+    */
+   protected boolean moneyField = false;
+   
+   /**
     * Custom constructor that defines the minimum and maximum 
     * parameters for the field.
     * 
@@ -33,7 +41,7 @@ public class NumericTextField extends AbstractRestrictiveTextField
     *    The maximum value allowed within the text field.
     */
    private NumericTextField(boolean allowDecimals, boolean allowNegatives, BigDecimal maximumValue)
-   {      
+   {  
       numDoc = new NumericFieldDocument(
             maximumValue, 
             this, 
@@ -121,6 +129,46 @@ public class NumericTextField extends AbstractRestrictiveTextField
    {
       throw new IllegalArgumentException("Please use getIntegerValue or getDecimalValue method to get the value from the field.");
    }
+   
+   /** 
+    * When focus is lost from the field, if this field is marked 
+    * as a money field, ensure we show the formatted amount with
+    * the decimal place and both decimal places.
+    */
+   @Override
+   public void onFocusLost()
+   {
+      if (this.moneyField)
+      {
+         super.setText(getDecimalValue().setScale(2, RoundingMode.DOWN).toPlainString());
+      }
+   }
+   
+   /**
+    * Returns the value of the NumericTextField instance's 
+    * moneyField property.
+    *
+    * @return 
+    *   The value of moneyField
+    */
+   public boolean isMoneyField()
+   {
+      return this.moneyField;
+   }
+   
+   /**
+    * Sets the value of the NumericTextField instance's 
+    * moneyField property.
+    *
+    * @param moneyField 
+    *   The value to set within the instance's 
+    *   moneyField property
+    */
+   public void setMoneyField(boolean moneyField)
+   {
+      this.moneyField = moneyField;
+   }
+
    /**
     * Creates a new integer text field which will be customized
     * to allow negative values and not have a maximum limit 
@@ -243,8 +291,9 @@ public class NumericTextField extends AbstractRestrictiveTextField
     *    The constructed and configured numeric text field.
     */
    public static NumericTextField newMoneyField(Number maximumValue)
-   {
+   {      
       NumericTextField field = newDecimalField(false, maximumValue);
+      field.setMoneyField(true);
       field.setMaximumDecimalPlaces(2);
       
       return field;

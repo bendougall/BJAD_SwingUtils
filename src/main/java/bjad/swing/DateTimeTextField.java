@@ -44,6 +44,8 @@ public class DateTimeTextField extends AbstractRestrictiveTextField implements K
     */
    public DateTimeTextField(Date defaultValue)
    {
+      super();
+      
       this.selectedDate = defaultValue;
       
       Color c = this.getBackground();
