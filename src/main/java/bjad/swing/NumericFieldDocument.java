@@ -3,8 +3,6 @@ package bjad.swing;
 import java.math.BigDecimal;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
-
 import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
 
 /**
@@ -15,12 +13,11 @@ import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
  * @author 
  *  Ben Dougall
  */
-class NumericFieldDocument extends PlainDocument
+class NumericFieldDocument extends AbstractBJADDocument
 {
    private static final long serialVersionUID = -3409138035297440726L;
    
    private BigDecimal maximumValue;
-   private AbstractRestrictiveTextField owningField;
 
    private boolean allowNegatives;
    private boolean allowDecimals;
@@ -54,9 +51,8 @@ class NumericFieldDocument extends PlainDocument
     */
    public NumericFieldDocument(BigDecimal maximumValue, AbstractRestrictiveTextField owningField, boolean allowDecimals, boolean allowNegatives)
    {
-      super();
+      super(owningField);
       this.maximumValue = maximumValue;
-      this.owningField = owningField;
       this.allowDecimals = allowDecimals;
       this.allowNegatives = allowNegatives;
    }
@@ -215,10 +211,8 @@ class NumericFieldDocument extends PlainDocument
     */
    @Override
    public void insertString(int offs, String str, AttributeSet a) throws BadLocationException 
-   {
-      StringBuilder sb = new StringBuilder(owningField.getTextContent());
-      sb.insert(offs, str);            
-      String newTextValue = sb.toString();
+   {           
+      String newTextValue = getFullText(offs, str, a);
       
       // Empty string, pass it up to the super class to place in the field.
       if (newTextValue.isEmpty())
