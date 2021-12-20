@@ -6,6 +6,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
@@ -26,7 +27,11 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    FocusListener
 {
    private static final long serialVersionUID = 1558940477904874871L;
-
+   
+   private static final String EXCLAIM_SOUND_PROPERTY_NAME = "win.sound.exclamation";
+   
+   private static Runnable PLAY_EXCLAIM_SOUND_RUNNABLE = null;
+   
    /**
     * The text to show in the field if the field is empty, but enabled 
     * and editable. 
@@ -90,7 +95,7 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
     * @return
     *    The placeholder text currently in use by the field.
     */
-   public String getPlaceHolderText()
+   public String getPlaceholderText()
    {
       return placeholderText;
    }
@@ -155,7 +160,7 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    {
       this.placeholderFont = placeholderFont;
    }
-   
+
    /**
     * Sets whether the text in the field will be selected when focus
     * is gained in the text box (default), or if the caret position 
@@ -168,6 +173,22 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    public void setSelectAllOnFocus(boolean val)
    {
       this.selectAllOnFocus = val;
+   }
+   
+   /**
+    * Plays the exclaimation sound owned by the 
+    * OS.
+    */
+   public void playExclaimSound()
+   {
+      if (PLAY_EXCLAIM_SOUND_RUNNABLE == null)
+      {
+         PLAY_EXCLAIM_SOUND_RUNNABLE = (Runnable)Toolkit.getDefaultToolkit().getDesktopProperty(EXCLAIM_SOUND_PROPERTY_NAME);
+      }
+      if (PLAY_EXCLAIM_SOUND_RUNNABLE != null)
+      {
+         PLAY_EXCLAIM_SOUND_RUNNABLE.run();
+      }
    }
 
    /**
@@ -255,6 +276,27 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
     */
    void fireInvalidEntryListeners(InvalidatedReason reason, String badEntry)
    {
+      fireInvalidEntryListeners(reason, badEntry, true);
+   }
+   
+   /**
+    * Notifies all listeners that have registered interest for
+    * notification on this event type. The event instance is lazily
+    * created using the parameters passed into the fire method. The
+    * listener list is processed in a last-to-first manner.
+    *
+    * @param reason
+    *    The reason the input was invalid
+    * @param badEntry
+    *    The text causing the bad entry.
+    * @param withBeep
+    *    True to sound the system's exclaimation sound, false just fire 
+    *    the listeners. 
+    */
+   void fireInvalidEntryListeners(InvalidatedReason reason, String badEntry, boolean withBeep)
+   {
+      playExclaimSound();
+      
       // Guaranteed to return a non-null array
       Object[] listeners = listenerList.getListenerList();
 
