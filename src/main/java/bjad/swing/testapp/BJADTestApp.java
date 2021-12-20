@@ -1,7 +1,8 @@
 package bjad.swing.testapp;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Date;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -10,6 +11,7 @@ import javax.swing.border.TitledBorder;
 
 import bjad.swing.BJADFieldPositionHelper;
 import bjad.swing.DateTimeTextField;
+import bjad.swing.LinkButton;
 import bjad.swing.NumericTextField;
 import bjad.swing.TextField;
 
@@ -33,7 +35,7 @@ public class BJADTestApp extends JFrame
    public BJADTestApp()
    {
       super("BJAD UI Test App");
-      setSize(700, 410);
+      setSize(700, 440);
       setDefaultCloseOperation(EXIT_ON_CLOSE);
       setContentPane(createContentPane());
    }
@@ -144,6 +146,20 @@ public class BJADTestApp extends JFrame
       lbl = new JLabel("Use the arrow keys while focused in the int field to move its label and the field itself.");
       lbl.setBounds(10, 15, 640, 30);
       instructions.add(lbl);
+      
+      
+      LinkButton btn = new LinkButton("No decoration button");
+      btn.setBounds(10, 360, 300, 30);      
+      btn.setFocusable(false);      
+      btn.addActionListener(new ActionListener()
+      {         
+         @Override
+         public void actionPerformed(ActionEvent e)
+         {
+            System.out.println("Undecorated button pressed.");
+         }
+      });
+      pane.add(btn);
       
       return pane;
    }
