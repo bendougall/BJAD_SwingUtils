@@ -341,7 +341,7 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    @Override
    public void focusLost(FocusEvent e)
    {
-      this.setText(this.getText().trim()); // Always get rid of any extra spaces
+      super.setText(super.getText().trim()); // Always get rid of any extra spaces
       onFocusLost(); // Run the method in case there is custom focus lost logic.
    }
    
