@@ -5,8 +5,6 @@ import java.util.Set;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
-
 import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
 
 /**
@@ -19,6 +17,12 @@ import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
 public class TextField extends AbstractRestrictiveTextField
 {
    private static final long serialVersionUID = 5000442719460052411L; 
+   
+   /**
+    * The maximum length of the text that can be entered into
+    * the field. -1 means no set limit. 
+    */
+   protected int maxLength = -1;
    
    /** 
     * The document that will apply the edit checks to 
@@ -114,6 +118,34 @@ public class TextField extends AbstractRestrictiveTextField
          }
       }
    }
+   
+   /**
+    * Returns the value of the AbstractRestrictiveTextField instance's 
+    * maxLength property.
+    *
+    * @return 
+    *   The value of maxLength
+    */
+   public int getMaxLength()
+   {
+      return this.maxLength;
+   }
+
+   /**
+    * 
+    */
+   /**
+    * Sets the value of the AbstractRestrictiveTextField instance's 
+    * maxLength property.
+    *
+    * @param maxLength 
+    *   The value to set within the instance's 
+    *   maxLength property
+    */
+   public void setMaxLength(int maxLength)
+   {
+      this.maxLength = maxLength;
+   }
 }
 
 /**
@@ -124,7 +156,7 @@ public class TextField extends AbstractRestrictiveTextField
  * @author 
  *   Ben Dougall
  */
-class AllowableCharacterDocument extends PlainDocument
+class AllowableCharacterDocument extends AbstractBJADDocument
 {
    private static final long serialVersionUID = -2895129417418051824L;
    
@@ -133,7 +165,7 @@ class AllowableCharacterDocument extends PlainDocument
     * its InvalidEntryListeners fired if an invalid
     * character is entered into the field. 
     */
-   protected AbstractRestrictiveTextField owningField; 
+   protected TextField owningField; 
    
    /** 
     * LinkedHashSet of characters allowed to be in the 
@@ -149,9 +181,9 @@ class AllowableCharacterDocument extends PlainDocument
     *    The field that will be using this document to 
     *    filter any invalid input. 
     */
-   public AllowableCharacterDocument(AbstractRestrictiveTextField owningField)
+   public AllowableCharacterDocument(TextField owningField)
    {
-      this.owningField = owningField;
+      super(owningField);
    }
 
    /**
@@ -190,6 +222,32 @@ class AllowableCharacterDocument extends PlainDocument
             sb.deleteCharAt(0);
          }
          str = sb.toString();
+      }
+      
+      // Check to see if the maximum length property of the field
+      // is set, and if so, see if the new text with the existing
+      // text will exceed that length. 
+      // 
+      // If so, stop the insert, unless the field was empty, in
+      // which, insert the substring of the text being entered to
+      // match the max length.
+      int maxLength = owningField != null ? owningField.getMaxLength() : 0;
+      if (maxLength > 0)
+      {         
+         if (getFullText(offs, str, a).length() > maxLength)
+         {
+            // Add the substring of the text being entered if the 
+            // field has no content. 
+            if (owningField.getTextContent().trim().isEmpty())
+            {
+               str = str.substring(0, maxLength);
+            }
+            else
+            {
+               owningField.fireInvalidEntryListeners(InvalidatedReason.MAX_LENGTH_EXCEEDED, "Field allows maximum of " + maxLength + " characters.");
+            }
+            return;
+         }
       }
       
       // If there are restrictions on the field, check to 

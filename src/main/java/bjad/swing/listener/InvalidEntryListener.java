@@ -34,7 +34,9 @@ public interface InvalidEntryListener extends EventListener
       /** Characters that are marked invalid */
       INVALID_CHARACTER,
       /** Too many decimal places in the field */
-      TOO_MANY_DECIMALS
+      TOO_MANY_DECIMALS,
+      /** Maximum length of field is exceeded */
+      MAX_LENGTH_EXCEEDED
    }
    
    /**
