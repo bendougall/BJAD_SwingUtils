@@ -257,6 +257,8 @@ public class BJADFieldPositionHelper extends KeyAdapter
                r.x++;
             }
             break;
+         default:
+            return;
          }
          cw.component.setBounds(r);
          System.out.println(getControlText(cw, true));
