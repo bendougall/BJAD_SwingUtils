@@ -26,6 +26,12 @@ public class LinkButton extends JButton implements MouseListener
 {
    private static final long serialVersionUID = -6293334168864202320L;
 
+   /** 
+    * Flag that when true will suppress the underline 
+    * of the text when the mouse hovers over the button. 
+    */
+   protected boolean suppressUnderlineOnHover = false;
+   
    /**
     * Default constructor.  
     */
@@ -86,6 +92,31 @@ public class LinkButton extends JButton implements MouseListener
    }
 
    /**
+    * Returns the value of the LinkButton instance's 
+    * suppressUnderlineOnHover property.
+    *
+    * @return 
+    *   The value of suppressUnderlineOnHover
+    */
+   public boolean isSuppressUnderlineOnHover()
+   {
+      return this.suppressUnderlineOnHover;
+   }
+   
+   /**
+    * Sets the value of the LinkButton instance's 
+    * suppressUnderlineOnHover property.
+    *
+    * @param suppressUnderlineOnHover 
+    *   The value to set within the instance's 
+    *   suppressUnderlineOnHover property
+    */
+   public void setSuppressUnderlineOnHover(boolean suppressUnderlineOnHover)
+   {
+      this.suppressUnderlineOnHover = suppressUnderlineOnHover;
+   }
+
+   /**
     * Sets all the properties within the button 
     * to make the button appear as a text link 
     * instead of a full button.
@@ -138,7 +169,10 @@ public class LinkButton extends JButton implements MouseListener
    @Override
    public void mouseEntered(MouseEvent e)
    {  
-      adjustUnderline(true);
+      if (!suppressUnderlineOnHover)
+      {
+         adjustUnderline(true);
+      }
    }
 
    /**
@@ -154,7 +188,10 @@ public class LinkButton extends JButton implements MouseListener
    @Override
    public void mouseExited(MouseEvent e)
    {  
-      adjustUnderline(false);
+      if (!suppressUnderlineOnHover)
+      {
+         adjustUnderline(false);
+      }
    }
    
    /**
