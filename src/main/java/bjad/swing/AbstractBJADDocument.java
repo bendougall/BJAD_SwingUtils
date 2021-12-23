@@ -1,7 +1,10 @@
 package bjad.swing;
 
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
+
+import bjad.swing.InvalidKeyEntryListener.InvalidatedReason;
 
 /**
  * Abstract document class for all the sub document
@@ -15,21 +18,15 @@ public class AbstractBJADDocument extends PlainDocument
 {
    private static final long serialVersionUID = -8223066353506548022L;
    
-   protected AbstractRestrictiveTextField owningField; 
+   protected AbstractRestrictiveTextField owningField;
    
    /**
-    * Constructor, setting the field that document is 
-    * owned by.
-    * 
+    * Constructor, setting the field that owns the document. 
     * @param owningField
-    *    The text field owning the document.
+    *    The owning field for the document.
     */
    public AbstractBJADDocument(AbstractRestrictiveTextField owningField)
    {
-      if (owningField == null)
-      {
-         throw new IllegalArgumentException("Owning Field cannot be null.");
-      }
       this.owningField = owningField;
    }
    
@@ -46,14 +43,23 @@ public class AbstractBJADDocument extends PlainDocument
     * @return
     *    The full text of the field if the text being entered is 
     *    acceptable based on the document's rules.  
+    * @throws BadLocationException
+    *    Any exceptions for the document framework will be thrown
     */
-   public String getFullText(int offs, String str, AttributeSet a) 
+   public String getFullText(int offs, String str, AttributeSet a) throws BadLocationException
    {
-      // Start if the text that is in the field already
-      StringBuilder sb = new StringBuilder(owningField.getTextContent());
-      // Insert the new text in the position its about to be added to the field.
-      sb.insert(offs, str);
-      
-      return sb.toString();
+      return getText(0, offs) + str + getText(offs, getLength()-offs);
+   }
+   
+   /**
+    * Fires the invalid key event detected listener on the owning field.
+    * @param keyEventBlockedReason
+    *    The reason the key event was invalid.
+    * @param message
+    *    The message associated to the key event being blocked.
+    */
+   protected void fireListenersOnOwningField(InvalidatedReason keyEventBlockedReason, String message)
+   {
+      owningField.fireInvalidEntryListeners(keyEventBlockedReason, message);
    }
 }

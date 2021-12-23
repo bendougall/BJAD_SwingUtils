@@ -3,7 +3,8 @@ package bjad.swing;
 import java.math.BigDecimal;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
+
+import bjad.swing.InvalidKeyEntryListener.InvalidatedReason;
 
 /**
  * Numeric value document that will allow the integer 
@@ -40,16 +41,16 @@ class NumericFieldDocument extends AbstractBJADDocument
    /**
     * Constructor, lays out the parameters for the document's filters.
     * 
+    * @param owningField
+    *    The field the document is owned by.
     * @param maximumValue
     *    The maximum value allowed within the field.
-    * @param owningField
-    *    The field that owns this document implementation.
     * @param allowDecimals
     *    Flag to allow or disallow decimal values in the field.
     * @param allowNegatives
     *    Flag to allow or disallow negative values in the field.
     */
-   public NumericFieldDocument(BigDecimal maximumValue, AbstractRestrictiveTextField owningField, boolean allowDecimals, boolean allowNegatives)
+   public NumericFieldDocument(AbstractRestrictiveTextField owningField, BigDecimal maximumValue, boolean allowDecimals, boolean allowNegatives)
    {
       super(owningField);
       this.maximumValue = maximumValue;
@@ -77,7 +78,7 @@ class NumericFieldDocument extends AbstractBJADDocument
       {
          if (!allowNegatives)
          {
-            owningField.fireInvalidEntryListeners(InvalidatedReason.NEGATIVE_VALUE, newTextValue);
+            fireListenersOnOwningField(InvalidatedReason.NEGATIVE_VALUE, "Negative value not allowed.");
          }
          val = new BigDecimal("-1");
       }
@@ -93,12 +94,12 @@ class NumericFieldDocument extends AbstractBJADDocument
             }
             catch (NumberFormatException ex)
             {
-               owningField.fireInvalidEntryListeners(InvalidatedReason.TOO_MANY_DECIMALS, newTextValue);
+               fireListenersOnOwningField(InvalidatedReason.NON_NUMERIC, "Invalid number.");
             }
          }
          else
          {
-            owningField.fireInvalidEntryListeners(InvalidatedReason.NON_INTEGER, newTextValue);
+            fireListenersOnOwningField(InvalidatedReason.NON_INTEGER, "Decimal value not allowed");
          }
       }
       
@@ -126,13 +127,13 @@ class NumericFieldDocument extends AbstractBJADDocument
          if (!allowNegatives && BigDecimal.ZERO.compareTo(valToCheck) == 1)
          {
             retValue = null;
-            owningField.fireInvalidEntryListeners(InvalidatedReason.NEGATIVE_VALUE, valToCheck.toPlainString());
+            fireListenersOnOwningField(InvalidatedReason.NEGATIVE_VALUE, "Negative value not allowed.");
          }
          // Invalid input due to the amount being more than the max amount setting. 
          if (maximumValue != null && maximumValue.compareTo(valToCheck) == -1)
          {
             retValue = null;
-            owningField.fireInvalidEntryListeners(InvalidatedReason.MAXIMUM_VALUE_PASSED, valToCheck.toPlainString());
+            fireListenersOnOwningField(InvalidatedReason.MAXIMUM_VALUE_PASSED, "Maximum amount exceeded.");
          }
          
          // Check for invalid input due to the number of decimal places
@@ -148,7 +149,7 @@ class NumericFieldDocument extends AbstractBJADDocument
                if (decimalPortion.length() > numberOfDecimalPlaces)
                {
                   retValue = null;
-                  owningField.fireInvalidEntryListeners(InvalidatedReason.TOO_MANY_DECIMALS, str);
+                  fireListenersOnOwningField(InvalidatedReason.TOO_MANY_DECIMALS, "Decimal Precision exceeded.");
                }
             }
          }
@@ -178,7 +179,7 @@ class NumericFieldDocument extends AbstractBJADDocument
          }
          catch (Exception ex)
          {
-            owningField.fireInvalidEntryListeners(InvalidatedReason.NON_NUMERIC, newTextValue);
+            fireListenersOnOwningField(InvalidatedReason.NON_NUMERIC, "Non numeric value entered.");
          }
          if (!allowDecimals) 
          {
@@ -188,7 +189,7 @@ class NumericFieldDocument extends AbstractBJADDocument
             }
             catch (Exception ex)
             {
-               owningField.fireInvalidEntryListeners(InvalidatedReason.NON_INTEGER, newTextValue);
+               fireListenersOnOwningField(InvalidatedReason.NON_INTEGER, "Non-integer value entered.");
             }
          }
       }
@@ -224,7 +225,7 @@ class NumericFieldDocument extends AbstractBJADDocument
       // are not allowed, prevent the text entry.
       if (!allowDecimals && str.contains("."))
       {
-         owningField.fireInvalidEntryListeners(InvalidatedReason.NON_INTEGER, newTextValue);
+         fireListenersOnOwningField(InvalidatedReason.NON_INTEGER, "Non-integer value entered.");
       }
       else
       {

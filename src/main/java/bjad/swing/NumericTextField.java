@@ -43,8 +43,8 @@ public class NumericTextField extends AbstractRestrictiveTextField
    private NumericTextField(boolean allowDecimals, boolean allowNegatives, BigDecimal maximumValue)
    {  
       numDoc = new NumericFieldDocument(
+            this,
             maximumValue, 
-            this, 
             allowDecimals,
             allowNegatives);
       
@@ -86,7 +86,7 @@ public class NumericTextField extends AbstractRestrictiveTextField
     */
    public BigDecimal getDecimalValue()
    {
-      return numDoc.verifyContents(getTextContent());
+      return isFieldEmpty() ? numDoc.verifyContents(getTextContent()) : BigDecimal.ZERO;
    }
    
    /**
@@ -130,6 +130,16 @@ public class NumericTextField extends AbstractRestrictiveTextField
       throw new IllegalArgumentException("Please use getIntegerValue or getDecimalValue method to get the value from the field.");
    }
    
+   /**
+    * Returns true if the field has no values in it.
+    * @return
+    *    True if the text content in the field is empty.
+    */
+   public boolean isFieldEmpty()
+   {
+      return this.getTextContent().trim().isEmpty();
+   }
+   
    /** 
     * When focus is lost from the field, if this field is marked 
     * as a money field, ensure we show the formatted amount with
@@ -138,7 +148,7 @@ public class NumericTextField extends AbstractRestrictiveTextField
    @Override
    public void onFocusLost()
    {
-      if (this.moneyField)
+      if (this.moneyField && !getTextContent().isEmpty())
       {
          super.setText(getDecimalValue().setScale(2, RoundingMode.DOWN).toPlainString());
       }

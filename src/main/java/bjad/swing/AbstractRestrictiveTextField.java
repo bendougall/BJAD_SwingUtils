@@ -12,8 +12,7 @@ import java.awt.event.FocusListener;
 
 import javax.swing.JTextField;
 
-import bjad.swing.listener.InvalidEntryListener;
-import bjad.swing.listener.InvalidEntryListener.InvalidatedReason;
+import bjad.swing.InvalidKeyEntryListener.InvalidatedReason;
 
 /**
  * Base class for restrictive text fields, such as
@@ -56,36 +55,19 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    protected boolean selectAllOnFocus = true;
    
    /**
+    * Property flagging if the computer will play 
+    * the windows exclaimation sound if an invalid
+    * key entry is detected within it. 
+    */
+   protected boolean beepOnInvalidKeyEntry = true;
+   
+   /**
     * Default constructor, adding the focus listener to the 
     * text field.
     */
    public AbstractRestrictiveTextField()
    {
       addFocusListener(this);
-   }
-   
-   /**
-    * Adds the invalid entry listener to the field so it will
-    * be registered for the events. 
-    * 
-    * @param listener
-    *    The listener to register
-    */
-   public void addInvalidEntryListener(InvalidEntryListener listener)
-   {
-      listenerList.add(InvalidEntryListener.class, listener);
-   }
-   
-   /**
-    * Removes the invalid entry listener from the field so it
-    * will no longer be registered for events.
-    * 
-    * @param listener
-    *    The listener to remove.
-    */
-   public void removeInvalidEntryListener(InvalidEntryListener listener)
-   {
-      listenerList.remove(InvalidEntryListener.class, listener);
    }
    
    /**
@@ -176,10 +158,35 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    }
    
    /**
+    * Returns the value of the AbstractRestrictiveTextField instance's 
+    * beepOnInvalidKeyEntry property.
+    *
+    * @return 
+    *   The value of beepOnInvalidKeyEntry
+    */
+   public boolean isBeepOnInvalidKeyEntry()
+   {
+      return this.beepOnInvalidKeyEntry;
+   }
+
+   /**
+    * Sets the value of the AbstractRestrictiveTextField instance's 
+    * beepOnInvalidKeyEntry property.
+    *
+    * @param beepOnInvalidKeyEntry 
+    *   The value to set within the instance's 
+    *   beepOnInvalidKeyEntry property
+    */
+   public void setBeepOnInvalidKeyEntry(boolean beepOnInvalidKeyEntry)
+   {
+      this.beepOnInvalidKeyEntry = beepOnInvalidKeyEntry;
+   }
+
+   /**
     * Plays the exclaimation sound owned by the 
     * OS.
     */
-   public void playExclaimSound()
+   public synchronized void playExclaimSound()
    {
       if (PLAY_EXCLAIM_SOUND_RUNNABLE == null)
       {
@@ -191,6 +198,62 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
       }
    }
 
+   /**
+    * Adds the invalid entry listener to the field so it will
+    * be registered for the events. 
+    * 
+    * @param listener
+    *    The listener to register
+    */
+   public void addInvalidEntryListener(InvalidKeyEntryListener listener)
+   {
+      listenerList.add(InvalidKeyEntryListener.class, listener);
+   }
+   
+   /**
+    * Removes the invalid entry listener from the field so it
+    * will no longer be registered for events.
+    * 
+    * @param listener
+    *    The listener to remove.
+    */
+   public void removeInvalidEntryListener(InvalidKeyEntryListener listener)
+   {
+      listenerList.remove(InvalidKeyEntryListener.class, listener);
+   }
+   
+   /**
+    * Notifies all listeners that have registered interest for
+    * notification on this event type. The event instance is lazily
+    * created using the parameters passed into the fire method. The
+    * listener list is processed in a last-to-first manner.
+    *
+    * @param reason
+    *    The reason the input was invalid
+    * @param badEntry
+    *    The text causing the bad entry.
+    */
+   void fireInvalidEntryListeners(InvalidatedReason reason, String badEntry)
+   {
+      if (beepOnInvalidKeyEntry)
+      {
+         playExclaimSound();
+      }
+      
+      // Guaranteed to return a non-null array
+      Object[] listeners = listenerList.getListenerList();
+
+      // Process the listeners last to first, notifying
+      // those that are interested in this event
+      for (int i = listeners.length - 2; i >= 0; i -= 2)
+      {
+         if (listeners[i] == InvalidKeyEntryListener.class)
+         {
+            ((InvalidKeyEntryListener) listeners[i + 1]).invalidKeyEntryDetected(this, reason, badEntry);
+         }
+      }
+   }
+   
    /**
     * Paints the component on the screen first by letting the swing framework
     * do what it usually does, then paints the place holder text for the field
@@ -261,54 +324,6 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    protected String getTextContent()
    {
       return super.getText().trim();
-   }
-   
-   /**
-    * Notifies all listeners that have registered interest for
-    * notification on this event type. The event instance is lazily
-    * created using the parameters passed into the fire method. The
-    * listener list is processed in a last-to-first manner.
-    *
-    * @param reason
-    *    The reason the input was invalid
-    * @param badEntry
-    *    The text causing the bad entry.
-    */
-   void fireInvalidEntryListeners(InvalidatedReason reason, String badEntry)
-   {
-      fireInvalidEntryListeners(reason, badEntry, true);
-   }
-   
-   /**
-    * Notifies all listeners that have registered interest for
-    * notification on this event type. The event instance is lazily
-    * created using the parameters passed into the fire method. The
-    * listener list is processed in a last-to-first manner.
-    *
-    * @param reason
-    *    The reason the input was invalid
-    * @param badEntry
-    *    The text causing the bad entry.
-    * @param withBeep
-    *    True to sound the system's exclaimation sound, false just fire 
-    *    the listeners. 
-    */
-   void fireInvalidEntryListeners(InvalidatedReason reason, String badEntry, boolean withBeep)
-   {
-      playExclaimSound();
-      
-      // Guaranteed to return a non-null array
-      Object[] listeners = listenerList.getListenerList();
-
-      // Process the listeners last to first, notifying
-      // those that are interested in this event
-      for (int i = listeners.length - 2; i >= 0; i -= 2)
-      {
-         if (listeners[i] == InvalidEntryListener.class)
-         {
-            ((InvalidEntryListener) listeners[i + 1]).invalidEntryDetected(this, reason, badEntry);
-         }
-      }
    }
    
    /** 

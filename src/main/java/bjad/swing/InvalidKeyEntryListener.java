@@ -1,8 +1,6 @@
-package bjad.swing.listener;
+package bjad.swing;
 
 import java.util.EventListener;
-
-import bjad.swing.AbstractRestrictiveTextField;
 
 /**
  * Listener interface which will be triggered if invalid
@@ -12,7 +10,7 @@ import bjad.swing.AbstractRestrictiveTextField;
  * @author 
  *  Ben Dougall
  */
-public interface InvalidEntryListener extends EventListener
+public interface InvalidKeyEntryListener extends EventListener
 {
    /**
     * The various reasons text may be invalid 
@@ -50,5 +48,5 @@ public interface InvalidEntryListener extends EventListener
     * @param input
     *    The invalid text.
     */
-   public void invalidEntryDetected(AbstractRestrictiveTextField field, InvalidatedReason reason, String input);
+   public void invalidKeyEntryDetected(AbstractRestrictiveTextField field, InvalidatedReason reason, String input);
 }
