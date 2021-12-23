@@ -86,7 +86,12 @@ public class NumericTextField extends AbstractRestrictiveTextField
     */
    public BigDecimal getDecimalValue()
    {
-      return isFieldEmpty() ? numDoc.verifyContents(getTextContent()) : BigDecimal.ZERO;
+      BigDecimal retValue = isFieldEmpty() ? BigDecimal.ZERO : new BigDecimal(getTextContent());
+      if (isMoneyField())
+      {
+         retValue = retValue.setScale(2, RoundingMode.HALF_UP);
+      }
+      return retValue;
    }
    
    /**
@@ -148,9 +153,12 @@ public class NumericTextField extends AbstractRestrictiveTextField
    @Override
    public void onFocusLost()
    {
-      if (this.moneyField && !getTextContent().isEmpty())
+      if (this.moneyField)
       {
-         super.setText(getDecimalValue().setScale(2, RoundingMode.DOWN).toPlainString());
+         if (!isFieldEmpty())
+         {
+            super.setText(getDecimalValue().setScale(2, RoundingMode.DOWN).toPlainString());
+         }
       }
    }
    
