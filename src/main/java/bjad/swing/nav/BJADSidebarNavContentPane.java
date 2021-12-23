@@ -34,14 +34,18 @@ public class BJADSidebarNavContentPane extends JPanel implements ActionListener
    protected JPanel panelShowing = null;
    protected JPanel currentModulePanelShowing = null;
    
+   protected SidebarSectionBehaviour sidebarBehaviour = SidebarSectionBehaviour.ONE_SECTION_AT_A_TIME;
+   
    /**
     * Constructor, setting the list of modules that will
     * be displayed within the sidebar of the overall content pane.
     * 
     * @param modules
     *    The modules to display in the sidebar of the content pane.
+    * @param behaviour
+    *    Defines how the module display will be handed.
     */
-   public BJADSidebarNavContentPane(List<BJADNavModule> modules)
+   public BJADSidebarNavContentPane(List<BJADNavModule> modules, SidebarSectionBehaviour behaviour)
    {
       super(new BorderLayout(), true);
       if (modules == null)
@@ -50,6 +54,11 @@ public class BJADSidebarNavContentPane extends JPanel implements ActionListener
       }
       // Set the module list for the sidebar to the sorted list of modules passed.
       this.modules = BJADNavModule.sortModules(modules);
+      
+      if (behaviour != null)
+      {
+         this.sidebarBehaviour = behaviour;
+      }
       
       this.add(createSidebar(), BorderLayout.WEST);
       this.add(createDefaultMainPanel(), BorderLayout.CENTER);
@@ -85,7 +94,7 @@ public class BJADSidebarNavContentPane extends JPanel implements ActionListener
          {
             currentModulePanelShowing = moduleOptions;
          }
-         else
+         else if (sidebarBehaviour == SidebarSectionBehaviour.ONE_SECTION_AT_A_TIME)
          {
             moduleOptions.setVisible(false);
          }
@@ -97,6 +106,7 @@ public class BJADSidebarNavContentPane extends JPanel implements ActionListener
          LinkButtonWithNavModule moduleTitle = new LinkButtonWithNavModule(module, moduleOptions);
          moduleTitle.setFocusable(false);
          moduleListingPanel.add(moduleTitle);
+         moduleTitle.setSuppressUnderlineOnHover(sidebarBehaviour == SidebarSectionBehaviour.ALL_SECTIONS_ALWAYS_EXPANDED);
          
          // Add a listener to the module title text so it
          // will display it's modules options and hide the 
@@ -172,13 +182,21 @@ public class BJADSidebarNavContentPane extends JPanel implements ActionListener
    {
       if (e.getSource() instanceof LinkButtonWithNavModule)
       {
-         if (currentModulePanelShowing != null)
+         if (sidebarBehaviour == SidebarSectionBehaviour.ONE_SECTION_AT_A_TIME)
          {
-            currentModulePanelShowing.setVisible(false);
+            if (currentModulePanelShowing != null)
+            {
+               currentModulePanelShowing.setVisible(false);
+            }
+            
+            currentModulePanelShowing = ((LinkButtonWithNavModule)e.getSource()).getEntryOptionsPanel();
+            currentModulePanelShowing.setVisible(true);
          }
-         
-         currentModulePanelShowing = ((LinkButtonWithNavModule)e.getSource()).getEntryOptionsPanel();
-         currentModulePanelShowing.setVisible(true);
+         else if (sidebarBehaviour == SidebarSectionBehaviour.ALL_SHOWN_AND_USER_CAN_COLLAPSE)
+         {
+            currentModulePanelShowing = ((LinkButtonWithNavModule)e.getSource()).getEntryOptionsPanel();
+            currentModulePanelShowing.setVisible(!currentModulePanelShowing.isVisible());
+         }
       }
       else if (e.getSource() instanceof LinkButtonWithModuleEntry)
       {
