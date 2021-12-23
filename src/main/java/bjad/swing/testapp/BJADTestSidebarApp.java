@@ -2,6 +2,8 @@ package bjad.swing.testapp;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,13 +16,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import bjad.swing.BJADFieldPositionHelper;
 import bjad.swing.DateTimeTextField;
 import bjad.swing.NumericTextField;
 import bjad.swing.TextField;
+import bjad.swing.WrappedLabel;
 import bjad.swing.nav.AbstractBJADNavPanel;
 import bjad.swing.nav.BJADModuleEntry;
 import bjad.swing.nav.BJADNavModule;
 import bjad.swing.nav.BJADSidebarNavContentPane;
+import bjad.swing.nav.SidebarSectionBehaviour;
 
 /**
  * (Description)
@@ -47,21 +52,18 @@ public class BJADTestSidebarApp extends JFrame
       List<BJADNavModule> modules = new ArrayList<BJADNavModule>();
       
       BJADNavModule module = new BJADNavModule();
-      module.setDisplayName("Module 2");
+      module.setDisplayName("Field Positioner");
       module.setOrdinial(1);
       
       BJADModuleEntry entry = new BJADModuleEntry();
-      entry.setDisplayName("Entry 2-2");
+      entry.setDisplayName("Demo");
       entry.setOrdinial(1);
-      module.getEntries().add(entry);
-      entry = new BJADModuleEntry();
-      entry.setDisplayName("Entry 2-1");
-      entry.setOrdinial(0);
+      entry.setNavPanel(new PositionerDemoPanel());
       module.getEntries().add(entry);
       modules.add(module);
       
       module = new BJADNavModule();
-      module.setDisplayName("TextField Demos");
+      module.setDisplayName("Entry Field Demos");
       module.setOrdinial(0);
       
       entry = new BJADModuleEntry();
@@ -83,7 +85,7 @@ public class BJADTestSidebarApp extends JFrame
       entry.setNavPanel(new DateEntryPanel());
       modules.add(module);
       
-      setContentPane(new BJADSidebarNavContentPane(modules));
+      setContentPane(new BJADSidebarNavContentPane(modules, SidebarSectionBehaviour.ALL_SECTIONS_ALWAYS_EXPANDED));
    }
    
    /**
@@ -307,4 +309,110 @@ class DateEntryPanel extends AbstractBJADNavPanel
    public void onPanelClosed()
    {
    }  
+}
+
+class PositionerDemoPanel extends AbstractBJADNavPanel implements ComponentListener
+{
+   private static final long serialVersionUID = -4087361006062121042L;
+   
+   private WrappedLabel firstLabel;
+   private WrappedLabel instructionLabel;   
+   private TextField textfield = new TextField();
+   private boolean firstPositioning = true;
+   
+   public PositionerDemoPanel()
+   {
+      super();
+      setLayout(null);
+      
+      firstLabel = new WrappedLabel("This display demos the field positioner helper.");
+      firstLabel.setBounds(10, 10, 400, 25);
+      firstLabel.setName("TitleLabel");
+      this.add(firstLabel);
+      
+      StringBuilder instructionsSb = new StringBuilder("When focus is on the text field, you can do the ");
+      instructionsSb.append("activities below and the console output will show the control's position ");
+      instructionsSb.append("size each time an arrow key event occurs.");
+      instructionsSb.append(System.lineSeparator());
+      instructionsSb.append("  - Arrow Keys to position the field left/right or up/down.");      
+      instructionsSb.append(System.lineSeparator());
+      instructionsSb.append("  - CTRL + Arrow Keys to resize the field wider/thinner or taller/shorter");
+      instructionsSb.append(System.lineSeparator());
+      instructionsSb.append(System.lineSeparator());
+      instructionsSb.append("");
+      instructionLabel = new WrappedLabel(instructionsSb.toString());
+      instructionLabel.setBounds(10, 40, 400, 200);
+      instructionLabel.setName("InstructionLabel");
+      this.add(instructionLabel);
+      
+      textfield.setBounds(10, 260, 400, 25);
+      textfield.setName("TextField");
+      textfield.addAllowableCharacter('¿');
+      this.add(textfield);
+      
+      new BJADFieldPositionHelper(textfield, textfield);
+      this.addComponentListener(this);
+   }
+   
+   @Override
+   public String getPanelTitle()
+   {
+      return "BJAD Field Positioning Helper Demo";
+   }
+
+   @Override
+   public JComponent getComponentForDefaultFocus()
+   {
+      // TODO Auto-generated method stub
+      return textfield;
+   }
+
+   @Override
+   public void onPanelDisplay()
+   {
+   }
+
+   @Override
+   public boolean canPanelClose()
+   {
+      return true;
+   }
+
+   @Override
+   public void onPanelClosed()
+   {  
+   }
+
+   @Override
+   public void componentResized(ComponentEvent e)
+   {
+      int labelWidth = this.getWidth() - firstLabel.getX() - firstLabel.getX();
+      
+      firstLabel.setBounds(firstLabel.getX(), firstLabel.getY(), labelWidth, firstLabel.getHeight());
+      
+      labelWidth = this.getWidth() - instructionLabel.getX() - instructionLabel.getX();
+      instructionLabel.setBounds(instructionLabel.getX(), instructionLabel.getY(), labelWidth, instructionLabel.getHeight());
+      
+      if (firstPositioning)
+      {
+         textfield.setBounds(textfield.getX(), textfield.getY(), labelWidth, textfield.getHeight());
+         firstPositioning = false;
+      }
+   }
+
+   @Override
+   public void componentMoved(ComponentEvent e)
+   {  
+   }
+
+   @Override
+   public void componentShown(ComponentEvent e)
+   {  
+   }
+
+   @Override
+   public void componentHidden(ComponentEvent e)
+   {      
+   }
+   
 }
