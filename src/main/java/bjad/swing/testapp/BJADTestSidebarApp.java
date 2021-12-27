@@ -2,13 +2,18 @@ package bjad.swing.testapp;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import bjad.swing.BJADFieldPositionHelper;
+import bjad.swing.DateEntryField;
 import bjad.swing.DateTimeTextField;
 import bjad.swing.NumericTextField;
 import bjad.swing.TextField;
@@ -259,10 +265,20 @@ class NumericEntryPanel extends AbstractBJADNavPanel
    }   
 }
 
-class DateEntryPanel extends AbstractBJADNavPanel
+class DateEntryPanel extends AbstractBJADNavPanel implements ActionListener
 {
    private static final long serialVersionUID = -5886406219517070874L;
-   
+   private static final String[] FORMATS = new String[] 
+         {
+               "MMM d, yyyy",
+               "yyyy-MM-dd",
+               "yyyy/MM/dd",
+               "EEE, MMM d, ''yy" 
+         };
+   private DateEntryField dateWithDefaultField = new DateEntryField(new Date(1641060941000L));
+   private DateEntryField dateField = new DateEntryField();
+   private JComboBox<String> firstFormatDropdown = new JComboBox<>(FORMATS);
+   private JComboBox<String> secondFormatDropdown = new JComboBox<>(FORMATS);
    private DateTimeTextField dateTimeTextField = new DateTimeTextField(new Date());
    
    public DateEntryPanel()
@@ -272,8 +288,49 @@ class DateEntryPanel extends AbstractBJADNavPanel
       
       JPanel content = new JPanel(true);
       content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+      
       JPanel pane = new JPanel(new BorderLayout(5,5));
-      JLabel lbl = new JLabel("Date Time Entry Field (use arrow keys to set):");
+      JLabel lbl = new JLabel("Date Field defaulting to 2022/01/01:");
+      lbl.setPreferredSize(new Dimension(300, 30));
+      pane.add(lbl, BorderLayout.WEST);
+      pane.add(dateWithDefaultField, BorderLayout.CENTER);
+      content.add(pane);
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("Date format for the above field:");
+      lbl.setPreferredSize(new Dimension(300, 20));
+      lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN | Font.ITALIC));
+      pane.add(lbl, BorderLayout.WEST);      
+      firstFormatDropdown.addActionListener(this);
+      firstFormatDropdown.setSelectedIndex(firstFormatDropdown.getItemCount()-1);
+      pane.add(firstFormatDropdown, BorderLayout.CENTER);
+      content.add(pane);  
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("Date Field (no default):");
+      lbl.setPreferredSize(new Dimension(300, 30));
+      pane.add(lbl, BorderLayout.WEST);
+      pane.add(dateField, BorderLayout.CENTER);
+      content.add(pane);
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("Date format for the above field:");
+      lbl.setPreferredSize(new Dimension(300, 20));
+      lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN | Font.ITALIC));
+      pane.add(lbl, BorderLayout.WEST);      
+      secondFormatDropdown.addActionListener(this);
+      pane.add(secondFormatDropdown, BorderLayout.CENTER);
+      content.add(pane);  
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("");
+      lbl.setPreferredSize(new Dimension(300, 30));
+      pane.add(lbl, BorderLayout.WEST);
+      pane.add(new JLabel(), BorderLayout.CENTER);
+      content.add(pane);     
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("Date Time Entry Field (use arrow keys to set):");
       lbl.setPreferredSize(new Dimension(300, 30));
       pane.add(lbl, BorderLayout.WEST);
       pane.add(dateTimeTextField, BorderLayout.CENTER);
@@ -308,6 +365,33 @@ class DateEntryPanel extends AbstractBJADNavPanel
    @Override
    public void onPanelClosed()
    {
+   }
+   
+   @Override
+   public void actionPerformed(ActionEvent e)
+   {
+      if (e.getSource().equals(firstFormatDropdown))
+      {
+         if (firstFormatDropdown.getSelectedIndex() > -1)
+         {
+            dateWithDefaultField.setDisplayFormat(new SimpleDateFormat(firstFormatDropdown.getSelectedItem().toString()));
+         }
+         else
+         {
+            firstFormatDropdown.setSelectedIndex(0);
+         }
+      }
+      if (e.getSource().equals(secondFormatDropdown))
+      {
+         if (secondFormatDropdown.getSelectedIndex() > -1)
+         {
+            dateField.setDisplayFormat(new SimpleDateFormat(secondFormatDropdown.getSelectedItem().toString()));
+         }
+         else
+         {
+            secondFormatDropdown.setSelectedIndex(0);
+         }
+      }
    }  
 }
 

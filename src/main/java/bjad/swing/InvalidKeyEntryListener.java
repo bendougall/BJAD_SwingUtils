@@ -34,7 +34,9 @@ public interface InvalidKeyEntryListener extends EventListener
       /** Too many decimal places in the field */
       TOO_MANY_DECIMALS,
       /** Maximum length of field is exceeded */
-      MAX_LENGTH_EXCEEDED
+      MAX_LENGTH_EXCEEDED,
+      /** An invalid date is entered into the date field */
+      INVALID_DATE
    }
    
    /**

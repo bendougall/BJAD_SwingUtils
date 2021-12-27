@@ -52,6 +52,47 @@ public class NumericTextField extends AbstractRestrictiveTextField
       setDocument(numDoc);
    }
    
+   /**
+    * Sets the decimal allowed flag on the field. 
+    * @param allowed
+    *    True to allow decimals, false to only allow ints.
+    */
+   public void setDecimalValuesAllowed(boolean allowed)
+   {
+      numDoc.setAllowDecimals(allowed);
+   }
+   
+   /**
+    * Sets the negative allowed flag on the field.
+    * @param allowed
+    *    True to allow negative values, false to only allow 
+    *    0 or positive values. 
+    */
+   public void setNegativeValuesAllowed(boolean allowed)
+   {
+      numDoc.setAllowNegatives(allowed);
+   }
+   
+   /**
+    * Sets the maximum value allowed in the field. 
+    * @param maxValue
+    *    The maximum value allowed in the field.
+    */
+   public void setMaximumValueAllowed(BigDecimal maxValue)
+   {
+      numDoc.setMaximumValue(maxValue);
+   }
+   
+   /**
+    * Sets the maximum value allowed in the field.
+    * @param maxValue
+    *    The maximum value allowed in the field.
+    */
+   public void setMaximumValueAllowed(BigInteger maxValue)
+   {
+      numDoc.setMaximumValue(new BigDecimal(maxValue));
+   }
+   
    /** 
     * Applies new number of decimal place limit, or removes
     * if the value is less than 0 

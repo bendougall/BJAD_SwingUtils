@@ -39,6 +39,45 @@ class NumericFieldDocument extends AbstractBJADDocument
    }
    
    /**
+    * Sets the value of the NumericFieldDocument instance's 
+    * maximumValue property.
+    *
+    * @param maximumValue 
+    *   The value to set within the instance's 
+    *   maximumValue property
+    */
+   public void setMaximumValue(BigDecimal maximumValue)
+   {
+      this.maximumValue = maximumValue;
+   }
+   
+   /**
+    * Sets the value of the NumericFieldDocument instance's 
+    * allowNegatives property.
+    *
+    * @param allowNegatives 
+    *   The value to set within the instance's 
+    *   allowNegatives property
+    */
+   public void setAllowNegatives(boolean allowNegatives)
+   {
+      this.allowNegatives = allowNegatives;
+   }
+
+   /**
+    * Sets the value of the NumericFieldDocument instance's 
+    * allowDecimals property.
+    *
+    * @param allowDecimals 
+    *   The value to set within the instance's 
+    *   allowDecimals property
+    */
+   public void setAllowDecimals(boolean allowDecimals)
+   {
+      this.allowDecimals = allowDecimals;
+   }
+
+   /**
     * Constructor, lays out the parameters for the document's filters.
     * 
     * @param owningField

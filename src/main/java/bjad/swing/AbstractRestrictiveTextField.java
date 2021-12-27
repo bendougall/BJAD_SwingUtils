@@ -369,4 +369,14 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
    {
       ; // do nothing. 
    }
+   
+   /** 
+    * Method to execute when focus is gained in the field
+    * but without passing the FocusEvent around to avoid
+    * useless imports.
+    */
+   protected void onFocusGained()
+   {
+      ; // do nothing. 
+   }
 }
