@@ -1,4 +1,4 @@
-package bjad.swing;
+package bjad.swing.positioner;
 
 import java.awt.Component;
 import java.awt.Rectangle;
@@ -21,7 +21,7 @@ import java.awt.event.KeyEvent;
  * @author 
  *   Ben Dougall
  */
-public class BJADFieldPositionHelper extends KeyAdapter
+public class BJADConsolePositionHelper extends KeyAdapter
 {
    private ComponentWrapper[] componentsToMove = null;
    
@@ -162,7 +162,7 @@ public class BJADFieldPositionHelper extends KeyAdapter
     * @param fieldsToMove
     *    The fields to re-position and/or re-size.
     */
-   public BJADFieldPositionHelper(Component triggerField, Component... fieldsToMove)
+   public BJADConsolePositionHelper(Component triggerField, Component... fieldsToMove)
    {
       if (triggerField != null)
       {
