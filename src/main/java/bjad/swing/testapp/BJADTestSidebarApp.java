@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -20,8 +22,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 
-import bjad.swing.BJADFieldPositionHelper;
 import bjad.swing.DateEntryField;
 import bjad.swing.DateTimeTextField;
 import bjad.swing.NumericTextField;
@@ -32,6 +34,8 @@ import bjad.swing.nav.BJADModuleEntry;
 import bjad.swing.nav.BJADNavModule;
 import bjad.swing.nav.BJADSidebarNavContentPane;
 import bjad.swing.nav.SidebarSectionBehaviour;
+import bjad.swing.positioner.BJADConsolePositionHelper;
+import bjad.swing.positioner.BJADUIPositionerHelper;
 
 /**
  * (Description)
@@ -429,13 +433,42 @@ class PositionerDemoPanel extends AbstractBJADNavPanel implements ComponentListe
       instructionLabel.setName("InstructionLabel");
       this.add(instructionLabel);
       
+      JPanel innerPane = new JPanel(null, true);
+      innerPane.setName("InnerPane");
+      innerPane.setBounds(10, 130, 612, 60);
+      innerPane.setBorder(new TitledBorder("Inner Panel"));
+      this.add(innerPane);
+      
+      JLabel innerLabel = new JLabel("Label");
+      innerLabel.setName("InnerLabel");
+      innerLabel.setBounds(10, 23, 50, 25);
+      innerPane.add(innerLabel);
+      
+      TextField innerTextField = new TextField();
+      innerTextField.setPlaceholderText("Text Field");
+      innerTextField.setName("InnerTextField");
+      innerTextField.setBounds(70, 23, 150, 25);
+      innerPane.add(innerTextField);
+      
+      JCheckBox innerCheckbox = new JCheckBox("Checkbox");
+      innerCheckbox.setName("InnerCheckbox");
+      innerCheckbox.setBounds(230, 23, 100, 25);
+      innerPane.add(innerCheckbox);
+      
+      JButton innerButton = new JButton("Button");
+      innerButton.setName("InnerButton");
+      innerButton.setBounds(340, 23, 100, 25);
+      innerPane.add(innerButton);
+      
       textfield.setBounds(10, 260, 400, 25);
       textfield.setName("TextField");
       textfield.addAllowableCharacter('¿');
       this.add(textfield);
       
-      new BJADFieldPositionHelper(textfield, textfield);
+      new BJADConsolePositionHelper(textfield, textfield);
       this.addComponentListener(this);
+      
+      new BJADUIPositionerHelper(textfield, firstLabel, instructionLabel, innerPane, textfield);
    }
    
    @Override
