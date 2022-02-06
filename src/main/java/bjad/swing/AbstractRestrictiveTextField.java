@@ -9,6 +9,8 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import javax.swing.JTextField;
 
@@ -302,14 +304,23 @@ public abstract class AbstractRestrictiveTextField extends JTextField implements
          g.setFont(placeholderFont);
          
          FontMetrics fm = g.getFontMetrics();
-         int heightestChar = fm.getHeight();
-         int midPoint = (int)((getHeight() - getInsets().top + 1 - getInsets().bottom + 1) / 2.0);
-         int yPos = (int)((midPoint / 2.0) + (heightestChar / 2.0) + 3);
          
+         // The drawing space is the the height of the text field minus the 
+         // padding added by the insets padding (both the top and bottom).
+         int drawingSpaceHeight = this.getHeight() - this.getInsets().top - this.getInsets().bottom;
+         
+         // Ensure we retain the decimals between finding the middle of the 
+         // drawing space and the midding of the ascent property of the font
+         // so the decimal results are included in the final position calculation.
+         BigDecimal midDraw = new BigDecimal(drawingSpaceHeight).divide(new BigDecimal(2.000));
+         BigDecimal midAscent = new BigDecimal(fm.getMaxAscent()).divide(new BigDecimal(2.000));
+                  
+         // Now that we now the mid points of the field and the font, we can 
+         // determine the y position to draw the place holder text in the field.
          g.drawString(
                placeholderText, 
                getInsets().left + 1, 
-               yPos);
+               midDraw.add(midAscent).setScale(0, RoundingMode.HALF_UP).intValue());
       }
    }
    

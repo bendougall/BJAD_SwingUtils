@@ -137,14 +137,14 @@ class TextFieldEntryPanel extends AbstractBJADNavPanel
       content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
       JPanel pane = new JPanel(new BorderLayout(5,5));
       JLabel lbl = new JLabel("No Restrictions Field:");
-      lbl.setPreferredSize(new Dimension(150, 30));
+      lbl.setPreferredSize(new Dimension(150, 35));
       pane.add(lbl, BorderLayout.WEST);
       pane.add(noRestrictionsField, BorderLayout.CENTER);
       content.add(pane);
       
       pane = new JPanel(new BorderLayout(5,5));
       lbl = new JLabel("'ABCDE' Only Field:");
-      lbl.setPreferredSize(new Dimension(150, 30));
+      lbl.setPreferredSize(new Dimension(150, 35));
       pane.add(lbl, BorderLayout.WEST);
       pane.add(abcdeField, BorderLayout.CENTER);
       abcdeField.setName("abcdeField");
@@ -155,7 +155,7 @@ class TextFieldEntryPanel extends AbstractBJADNavPanel
       
       pane = new JPanel(new BorderLayout(5,5));
       lbl = new JLabel("3 Characters only Field");
-      lbl.setPreferredSize(new Dimension(150, 30));
+      lbl.setPreferredSize(new Dimension(150, 35));
       pane.add(lbl, BorderLayout.WEST);
       pane.add(maxLengthField, BorderLayout.CENTER);
       maxLengthField.setName("maxLengthField");
@@ -211,7 +211,8 @@ class NumericEntryPanel extends AbstractBJADNavPanel
       content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
       JPanel pane = new JPanel(new BorderLayout(5,5));
       JLabel lbl = new JLabel("Integer Only Field:");
-      lbl.setPreferredSize(new Dimension(150, 30));
+      lbl.setPreferredSize(new Dimension(150, 39));
+      intField.setPlaceholderText("Integers only in this field.");
       pane.add(lbl, BorderLayout.WEST);
       pane.add(intField, BorderLayout.CENTER);
       content.add(pane);
