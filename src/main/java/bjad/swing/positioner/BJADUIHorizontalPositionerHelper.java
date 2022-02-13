@@ -43,7 +43,7 @@ import javax.swing.table.TableColumnModel;
  * @author 
  *   Ben Dougall
  */
-public class BJADUIPositionerHelper
+public class BJADUIHorizontalPositionerHelper
 {
    private ComponentWrapper[] componentsToMove = null;
    
@@ -57,7 +57,7 @@ public class BJADUIPositionerHelper
     * @param componentsToControl
     *    The fields to re-position and/or re-size.
     */
-   public BJADUIPositionerHelper(Component controlToTrigger, Component... componentsToControl)
+   public BJADUIHorizontalPositionerHelper(Component controlToTrigger, Component... componentsToControl)
    {
       if (controlToTrigger == null)
       {
@@ -188,7 +188,6 @@ class PositionerWindow extends JDialog implements ActionListener, ItemListener
       table = new JTable(controlTableModel);
       table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       table.setFillsViewportHeight(true);
-      table.setDefaultRenderer(Boolean.class, null);
       
       JPanel contentPane = new JPanel(new BorderLayout());
       contentPane.add(buildDPadPanel(), BorderLayout.WEST);

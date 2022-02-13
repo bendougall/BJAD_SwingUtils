@@ -35,7 +35,8 @@ import bjad.swing.nav.BJADNavModule;
 import bjad.swing.nav.BJADSidebarNavContentPane;
 import bjad.swing.nav.SidebarSectionBehaviour;
 import bjad.swing.positioner.BJADConsolePositionHelper;
-import bjad.swing.positioner.BJADUIPositionerHelper;
+import bjad.swing.positioner.BJADUIHorizontalPositionerHelper;
+import bjad.swing.positioner.BJADUIVerticalPositionerHelper;
 
 /**
  * (Description)
@@ -469,7 +470,9 @@ class PositionerDemoPanel extends AbstractBJADNavPanel implements ComponentListe
       new BJADConsolePositionHelper(textfield, textfield);
       this.addComponentListener(this);
       
-      new BJADUIPositionerHelper(textfield, firstLabel, instructionLabel, innerPane, textfield);
+      new BJADUIHorizontalPositionerHelper(textfield, firstLabel, instructionLabel, innerPane, textfield);
+      
+      new BJADUIVerticalPositionerHelper(textfield, firstLabel, instructionLabel, innerPane, textfield);
    }
    
    @Override
