@@ -3,6 +3,7 @@ package bjad.swing.positioner;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,7 @@ import java.util.LinkedHashSet;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -25,6 +27,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -43,7 +46,7 @@ import javax.swing.table.TableColumnModel;
  * @author 
  *   Ben Dougall
  */
-public class BJADUIHorizontalPositionerHelper
+public class BJADUIPositionerHelper
 {
    private ComponentWrapper[] componentsToMove = null;
    
@@ -51,13 +54,17 @@ public class BJADUIHorizontalPositionerHelper
     * Constructor, setting the field to add the mouse listener to so that right 
     * click will bring up the positioner window. 
     * 
+    * @param horizontal
+    *    True to wire the horizontal positior window to appear on right click 
+    *    of the controlToTrigger, or false to wire the vertical version of the 
+    *    window.
     * @param controlToTrigger
     *    The field that will have the key listener that will adjust the 
     *    position and size of the fields passed
     * @param componentsToControl
     *    The fields to re-position and/or re-size.
     */
-   public BJADUIHorizontalPositionerHelper(Component controlToTrigger, Component... componentsToControl)
+   private BJADUIPositionerHelper(final boolean horizontal, Component controlToTrigger, Component... componentsToControl)
    {
       if (controlToTrigger == null)
       {
@@ -89,7 +96,8 @@ public class BJADUIHorizontalPositionerHelper
       
       // Make the window that will show when the control gets 
       // right clicked on. 
-      final PositionerWindow window = new PositionerWindow(componentsToMove);
+      final JDialog window = horizontal ? new PositionerWindow(componentsToMove) :
+            new VerticalPositionerWindow(componentsToMove);
       
       // Add the right click listener to the control
       controlToTrigger.addMouseListener(new MouseAdapter()
@@ -147,6 +155,38 @@ public class BJADUIHorizontalPositionerHelper
          }
       }
       return componentSet;
+   }
+   
+   /**
+    * Wires the control to trigger with a mouse listener so a right click event
+    * will show the horizontal positioner window to modify the location of the 
+    * controls/panels passed to the function. 
+    * 
+    * @param controlToTrigger
+    *    The field that will have the key listener that will adjust the 
+    *    position and size of the fields passed
+    * @param componentsToControl
+    *    The fields to re-position and/or re-size.
+    */
+   public static void wireHorizontalPositionerDialog(Component controlToTrigger, Component... componentsToControl)
+   {
+      new BJADUIPositionerHelper(true, controlToTrigger, componentsToControl);
+   }
+   
+   /**
+    * Wires the control to trigger with a mouse listener so a right click event
+    * will show the vertical positioner window to modify the location of the 
+    * controls/panels passed to the function. 
+    * 
+    * @param controlToTrigger
+    *    The field that will have the key listener that will adjust the 
+    *    position and size of the fields passed
+    * @param componentsToControl
+    *    The fields to re-position and/or re-size.
+    */
+   public static void wireVerticalPositionerDialog(Component controlToTrigger, Component... componentsToControl)
+   {
+      new BJADUIPositionerHelper(false, controlToTrigger, componentsToControl);
    }
 }
 
@@ -841,5 +881,334 @@ class ComponentWrapper
    public Component getComponent()
    {
       return this.component;
+   }
+}
+
+/**
+ * Dialog to display with the positioning options within it, including
+ * the positioning buttons and the overall control table. 
+ *
+ * @author 
+ *   Ben Dougall
+ */
+class VerticalPositionerWindow extends JDialog implements ActionListener
+{
+   private static final long serialVersionUID = 4335206789540540660L;
+ 
+   private JButton upButton = new JButton("Up");
+   private JButton rightButton = new JButton("Right");
+   private JButton downButton = new JButton("Down");
+   private JButton leftButton = new JButton("Left");
+   private JButton thinButton = new JButton("Thin");
+   private JButton wideButton = new JButton("Wide");
+   private JButton tallButton = new JButton("Tall");
+   private JButton shortButton = new JButton("Short");
+   private JTextField factorField = new JTextField("1");
+   private JCheckBox consoleCheckbox = new JCheckBox("Send changes to console");
+   
+   private JTable table; 
+   private ControlTableModel controlTableModel; 
+   
+   /**
+    * Creates the dialog with the components the window is configured
+    * to control. 
+    * 
+    * @param components
+    *    The list of components to manage the position(s) of
+    */
+   public VerticalPositionerWindow(ComponentWrapper[] components)
+   {
+      super();
+      setModal(false);
+      setTitle("Positioner Helper");
+   
+      controlTableModel = new ControlTableModel(components);
+      
+      JPanel contentPane = new JPanel(new BorderLayout(0, 5));
+      JPanel dPanel = buildDPadPanel();
+      dPanel.setPreferredSize(new Dimension(450, 205));
+      dPanel.setMinimumSize(new Dimension(450, 205));
+      contentPane.add(dPanel, BorderLayout.NORTH);
+      
+      JPanel tableAreaPanel = createTableArea();
+      contentPane.add(tableAreaPanel, BorderLayout.CENTER);     
+      
+      contentPane.setBorder(new EmptyBorder(0, 0, 0, 5));
+      setContentPane(contentPane);
+      setSize(460, 500);
+      
+      resizeColumnWidth(table);
+   }
+   
+   /**
+    * Creates the instruction section of the dialog. 
+    * @return
+    *    The wrapped label control containing the 
+    *    instructions for the panel.    
+    */
+   private JTextArea createInstructionLabel()
+   {
+      JTextArea wrappedLabel = new JTextArea();
+      StringBuilder sb = new StringBuilder("Use arrow keys to adjust position, or CTRL+arrow keys to adjust the size of the checked elements in the table below.");
+      sb.append(System.lineSeparator()).append("You can also change the position and size manually by modifying the values in the table.");
+      wrappedLabel.setText(sb.toString());
+      wrappedLabel.setFont(wrappedLabel.getFont().deriveFont(Font.PLAIN));
+      
+      // Turn on wrapping by default.
+      wrappedLabel.setWrapStyleWord(true);
+      wrappedLabel.setLineWrap(true);
+      
+      // Make the text area super class act like
+      // like a label by making it transparent,
+      // not editable, and not focusable.
+      wrappedLabel.setOpaque(false);
+      wrappedLabel.setEditable(false);
+      wrappedLabel.setFocusable(false);
+      
+      // Make the text area super class look
+      // like a label by stealing all the 
+      // label properties from the UIManager
+      wrappedLabel.setBackground(UIManager.getColor("Label.background"));
+      wrappedLabel.setFont(UIManager.getFont("Label.font"));
+      wrappedLabel.setBorder(new TitledBorder("Instructions"));
+      
+      return wrappedLabel;
+   }
+   
+   /**
+    * Builds left side of the dialog with the instructions and 
+    * button "d-pad" controls.
+    * @return
+    *    The constructed panel.
+    */
+   private JPanel buildDPadPanel()
+   {
+      JPanel dPadPane = new JPanel(null, true);
+      dPadPane.setPreferredSize(new Dimension(450, 500));
+      
+      JTextArea instructionBox = createInstructionLabel();
+      instructionBox.setBounds(5, 5, 430, 90);      
+      dPadPane.add(instructionBox);
+      
+      // Make a wiring for the radio buttons so that the 
+      // arrow keys will "press" the buttons in the d-pad.
+      KeyListener arrowBinding = new KeyAdapter()
+      {
+         @Override
+         public void keyPressed(KeyEvent e)
+         {
+            switch (e.getKeyCode())
+            {
+            case KeyEvent.VK_UP:
+               if (e.isControlDown())
+               {
+                  shortButton.doClick();
+               }
+               else
+               {
+                  upButton.doClick();
+               }
+               e.consume();
+               break;
+            case KeyEvent.VK_LEFT:
+               if (e.isControlDown())
+               {
+                  thinButton.doClick();
+               }
+               else
+               {
+                  leftButton.doClick();
+               }
+               e.consume();
+               break;
+            case KeyEvent.VK_DOWN:
+               if (e.isControlDown())
+               {
+                  tallButton.doClick();
+               }
+               else
+               {
+                  downButton.doClick();
+               }
+               e.consume();
+               break;
+            case KeyEvent.VK_RIGHT:
+               if (e.isControlDown())
+               {
+                  wideButton.doClick();
+               }
+               else
+               {
+                  rightButton.doClick();
+               }
+               e.consume();
+               break;
+            default:
+                  break;                  
+            }
+         }
+      };
+      
+      factorField.addKeyListener(arrowBinding);
+      
+      JPanel optionPane = new JPanel(new BorderLayout(5, 5), true);
+      JPanel factorPanel = new JPanel(new  BorderLayout(5, 5));
+      factorPanel.add(new JLabel("Pixels to move by:"), BorderLayout.WEST);
+      factorPanel.add(factorField, BorderLayout.CENTER);
+      
+      optionPane.add(factorPanel, BorderLayout.CENTER);
+      
+      consoleCheckbox.setSelected(true);      
+      optionPane.add(consoleCheckbox, BorderLayout.EAST);
+      
+      optionPane.setBounds(5, 100, 430, 30);
+      
+      dPadPane.add(optionPane);
+            
+      JPanel buttonGridPane = new JPanel(new GridLayout(2, 4), true);
+      buttonGridPane.add(upButton);    
+      buttonGridPane.add(downButton);  
+      buttonGridPane.add(leftButton);
+      buttonGridPane.add(rightButton);
+      buttonGridPane.add(shortButton);    
+      buttonGridPane.add(tallButton);  
+      buttonGridPane.add(thinButton);
+      buttonGridPane.add(wideButton);
+      
+      buttonGridPane.setBounds(5, 140, 430, 60);
+      dPadPane.add(buttonGridPane);
+      
+      JButton[] btns = new JButton[] {
+            upButton, downButton, leftButton, rightButton,
+            shortButton, tallButton, thinButton, wideButton
+      };
+      for (JButton btn : btns)
+      {
+         btn.addActionListener(this);
+         btn.setFocusable(false);
+      }
+      
+      return dPadPane;
+   }
+   
+   private JPanel createTableArea()
+   {
+      table = new JTable(controlTableModel);
+      table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      table.setFillsViewportHeight(true);
+      
+      JPanel tableArea = new JPanel(new BorderLayout(0, 0), true);
+      tableArea.setBorder(new TitledBorder("Controls to move:"));
+      tableArea.add(new JScrollPane(table), BorderLayout.CENTER);
+      return tableArea;
+   }
+   /**
+    * Quick column resizer that will size the 
+    * columns in the table based on the contents 
+    * in the table. 
+    * 
+    * @param table
+    *    The table to size the columns in.
+    */
+   private void resizeColumnWidth(JTable table) 
+   {
+      final TableColumnModel columnModel = table.getColumnModel();
+      for (int column = 0; column < table.getColumnCount(); column++) 
+      {
+          int width = 15; // Min width
+          for (int row = 0; row < table.getRowCount(); row++) 
+          {
+              TableCellRenderer renderer = table.getCellRenderer(row, column);
+              Component comp = table.prepareRenderer(renderer, row, column);
+              width = Math.max(comp.getPreferredSize().width +1 , width);
+          }
+          columnModel.getColumn(column).setPreferredWidth(width);
+      }
+   }
+
+   /**
+    * Reacts to the "dpad" buttons being pressed so any 
+    * selected controls in the table will be re-positioned
+    * or re-sized based on the button pressed.  
+    */
+   @Override
+   public void actionPerformed(ActionEvent e)
+   {
+      boolean sizeMode = 
+            e.getSource().equals(shortButton) ||
+            e.getSource().equals(tallButton) ||
+            e.getSource().equals(thinButton) ||
+            e.getSource().equals(wideButton);
+      
+      if (consoleCheckbox.isSelected())
+      {
+         System.out.println("--- Start ---");
+      }
+      for (int i = 0; i < controlTableModel.getRowCount(); ++i)
+      {         
+         int columnToAdjust = -1;
+         int adjustValue = 1;
+         try
+         {
+            adjustValue = Integer.parseInt(factorField.getText());         
+         }
+         catch (Exception ex)
+         {
+            adjustValue = 1;
+            factorField.setText("1");
+         }
+         if (controlTableModel.getValueAt(i, 0) == (Boolean.TRUE))
+         {
+            if (
+                  e.getSource().equals(upButton) || 
+                  e.getSource().equals(downButton) || 
+                  e.getSource().equals(shortButton) || 
+                  e.getSource().equals(tallButton))
+            {
+               columnToAdjust = sizeMode ? 6 : 4;
+               if (upButton.equals(e.getSource()) || shortButton.equals(e.getSource()))
+               {
+                  adjustValue *= -1;
+               }
+            }
+            else if (
+                  e.getSource().equals(leftButton) || 
+                  e.getSource().equals(rightButton) ||
+                  e.getSource().equals(thinButton) ||
+                  e.getSource().equals(wideButton))
+            {
+               columnToAdjust = sizeMode ? 5 : 3;
+               if (leftButton.equals(e.getSource()) || thinButton.equals(e.getSource()))
+               {
+                  adjustValue *= -1;
+               }
+            }
+            
+            if (columnToAdjust > 2)
+            {
+               int existingValue = (int)controlTableModel.getValueAt(i, columnToAdjust);            
+               controlTableModel.setValueAt((existingValue + adjustValue), i, columnToAdjust);
+               controlTableModel.fireTableCellUpdated(i, columnToAdjust);
+               
+               if (consoleCheckbox.isSelected())
+               {                  
+                  StringBuilder sb = new StringBuilder();
+                  sb.append("  Type=").append(controlTableModel.components[i].getComponent().getClass().getSimpleName()).append(" :: ");
+                  
+                  sb.append(controlTableModel.components[i].getNameOrText());
+                  sb.append(" :: ");
+                  
+                  String boundsText = controlTableModel.components[i].currentPositionText();
+                  sb.append("Position = ").append(boundsText);
+                  
+                  System.out.println(sb.toString());
+               }
+            }
+         }         
+      }   
+      if (consoleCheckbox.isSelected())
+      {
+         System.out.println("--- End ---");
+      }
    }
 }
