@@ -2,12 +2,16 @@ package bjad.swing.positioner;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
@@ -21,6 +25,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -28,7 +33,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JWindow;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
@@ -107,7 +114,10 @@ public class BJADUIPositionerHelper
          {
             if (SwingUtilities.isRightMouseButton(e))
             {
-               window.setLocationRelativeTo(controlToTrigger);
+               Container parentOfTrigger = getParentOfTriggerBounds(controlToTrigger);               
+               Rectangle windowBounds = parentOfTrigger.getBounds();
+                  
+               window.setLocation((windowBounds.x + windowBounds.width), windowBounds.y);
                window.setVisible(true);
             }
          }
@@ -129,8 +139,33 @@ public class BJADUIPositionerHelper
       System.out.println(String.format(
             "%s: Control %s has been wired to show the UI positioner window. " + System.lineSeparator() +
             "Right click the control to show the positioner window.", 
-            this.getClass().getSimpleName(),
+            window.getClass().getSimpleName(),
             sb.toString()));
+   }
+   
+   private Container getParentOfTriggerBounds(Component trigger)
+   {
+      Container superParentOfTrigger = trigger.getParent();
+      for (;;)
+      {
+         Container parent = superParentOfTrigger.getParent();
+         if (parent != null)
+         {
+            superParentOfTrigger = parent;
+            if (
+                  superParentOfTrigger instanceof JFrame || 
+                  superParentOfTrigger instanceof JWindow ||
+                  superParentOfTrigger instanceof JDialog)
+            {
+               break;
+            }
+         }
+         else
+         {
+            break;
+         }
+      }
+      return superParentOfTrigger;
    }
    
    /**
@@ -894,6 +929,12 @@ class ComponentWrapper
 class VerticalPositionerWindow extends JDialog implements ActionListener
 {
    private static final long serialVersionUID = 4335206789540540660L;
+   private static final int WINDOW_WIDTH = 560;
+   private static final String INSTRUCTION_TEXT = 
+         "While the focus is on the pixel field, use arrow keys to adjust position, or CTRL+arrow keys to adjust the size of the checked elements in the table below." +
+          System.lineSeparator() + System.lineSeparator() + 
+          "You can also change the position and size manually by modifying the values in the table.";
+        
  
    private JButton upButton = new JButton("Up");
    private JButton rightButton = new JButton("Right");
@@ -905,6 +946,7 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
    private JButton shortButton = new JButton("Short");
    private JTextField factorField = new JTextField("1");
    private JCheckBox consoleCheckbox = new JCheckBox("Send changes to console");
+   private JCheckBox alwaysOnTopCheckbox = new JCheckBox("Always on top?");
    
    private JTable table; 
    private ControlTableModel controlTableModel; 
@@ -926,8 +968,8 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
       
       JPanel contentPane = new JPanel(new BorderLayout(0, 5));
       JPanel dPanel = buildDPadPanel();
-      dPanel.setPreferredSize(new Dimension(450, 205));
-      dPanel.setMinimumSize(new Dimension(450, 205));
+      dPanel.setPreferredSize(new Dimension(WINDOW_WIDTH-10, 205));
+      dPanel.setMinimumSize(new Dimension(WINDOW_WIDTH-10, 205));
       contentPane.add(dPanel, BorderLayout.NORTH);
       
       JPanel tableAreaPanel = createTableArea();
@@ -935,9 +977,56 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
       
       contentPane.setBorder(new EmptyBorder(0, 0, 0, 5));
       setContentPane(contentPane);
-      setSize(460, 500);
+      setSize(WINDOW_WIDTH, 500);
+      setAlwaysOnTop(true);
       
       resizeColumnWidth(table);
+      
+      addComponentListener(new ComponentAdapter()
+      {
+         @Override
+         public void componentHidden(ComponentEvent e)
+         {
+            if (!consoleCheckbox.isSelected())
+            {
+               return;
+            }
+            
+            StringBuilder selSB = new StringBuilder();
+            StringBuilder unSelSB = new StringBuilder();
+            for (int i = 0; i != controlTableModel.getRowCount(); ++i)
+            {
+               StringBuilder sb = new StringBuilder();
+               sb.append("      Type=").append(controlTableModel.components[i].getComponent().getClass().getSimpleName()).append(" :: ");
+               
+               sb.append(controlTableModel.components[i].getNameOrText());
+               sb.append(" :: ");
+               
+               String boundsText = controlTableModel.components[i].currentPositionText();
+               sb.append("Position = ").append(boundsText);
+               
+               sb.append(System.lineSeparator());
+               
+               if (controlTableModel.getValueAt(i, 0) == (Boolean.TRUE))
+               {
+                  selSB.append(sb.toString());
+               }
+               else 
+               {
+                  unSelSB.append(sb.toString());
+               }
+            }
+                        
+            System.out.println("- Positioner Window Closed -");
+            System.out.println("---  Start of selected control informaton  ---");
+            System.out.print(selSB.toString());
+            System.out.println("---   End of selected control informaton   ---");
+            System.out.println("--- Start of unselected control informaton ---");
+            System.out.print(unSelSB.toString());
+            System.out.println("---  End of unselected control informaton  ---");
+            System.out.println("- Positioner Output complete -");
+         }
+      });
    }
    
    /**
@@ -949,9 +1038,7 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
    private JTextArea createInstructionLabel()
    {
       JTextArea wrappedLabel = new JTextArea();
-      StringBuilder sb = new StringBuilder("Use arrow keys to adjust position, or CTRL+arrow keys to adjust the size of the checked elements in the table below.");
-      sb.append(System.lineSeparator()).append("You can also change the position and size manually by modifying the values in the table.");
-      wrappedLabel.setText(sb.toString());
+      wrappedLabel.setText(INSTRUCTION_TEXT);
       wrappedLabel.setFont(wrappedLabel.getFont().deriveFont(Font.PLAIN));
       
       // Turn on wrapping by default.
@@ -984,11 +1071,16 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
    private JPanel buildDPadPanel()
    {
       JPanel dPadPane = new JPanel(null, true);
-      dPadPane.setPreferredSize(new Dimension(450, 500));
+      dPadPane.setPreferredSize(new Dimension(WINDOW_WIDTH-10, 500));
       
       JTextArea instructionBox = createInstructionLabel();
-      instructionBox.setBounds(5, 5, 430, 90);      
-      dPadPane.add(instructionBox);
+      
+      JPanel instructionPanel = new JPanel(new BorderLayout());
+      dPadPane.add(instructionPanel);
+      instructionPanel.setBounds(0, 1, WINDOW_WIDTH-30, 90);
+      
+      instructionPanel.setBorder(new EmptyBorder(2, 2, 2, 2));
+      instructionPanel.add(instructionBox, BorderLayout.CENTER);
       
       // Make a wiring for the radio buttons so that the 
       // arrow keys will "press" the buttons in the d-pad.
@@ -1053,15 +1145,24 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
       
       JPanel optionPane = new JPanel(new BorderLayout(5, 5), true);
       JPanel factorPanel = new JPanel(new  BorderLayout(5, 5));
-      factorPanel.add(new JLabel("Pixels to move by:"), BorderLayout.WEST);
+      JLabel lbl = new JLabel("Pixels to move by:");
+      lbl.setBorder(new EmptyBorder(0, 0, 0, 5));
+      factorPanel.add(lbl, BorderLayout.WEST);
       factorPanel.add(factorField, BorderLayout.CENTER);
       
       optionPane.add(factorPanel, BorderLayout.CENTER);
       
-      consoleCheckbox.setSelected(true);      
-      optionPane.add(consoleCheckbox, BorderLayout.EAST);
+      JPanel boxesPanel = new JPanel(new FlowLayout(SwingConstants.LEFT, 5, 0), true);
+      consoleCheckbox.setSelected(true);
+      boxesPanel.add(consoleCheckbox);
+            
+      alwaysOnTopCheckbox.addActionListener(this);
+      alwaysOnTopCheckbox.setSelected(true);      
+      boxesPanel.add(alwaysOnTopCheckbox);
       
-      optionPane.setBounds(5, 100, 430, 30);
+      optionPane.add(boxesPanel, BorderLayout.EAST);
+      
+      optionPane.setBounds(5, 105, WINDOW_WIDTH-30, 25);
       
       dPadPane.add(optionPane);
             
@@ -1075,7 +1176,7 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
       buttonGridPane.add(thinButton);
       buttonGridPane.add(wideButton);
       
-      buttonGridPane.setBounds(5, 140, 430, 60);
+      buttonGridPane.setBounds(5, 140, WINDOW_WIDTH-30, 60);
       dPadPane.add(buttonGridPane);
       
       JButton[] btns = new JButton[] {
@@ -1134,81 +1235,95 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
    @Override
    public void actionPerformed(ActionEvent e)
    {
-      boolean sizeMode = 
-            e.getSource().equals(shortButton) ||
-            e.getSource().equals(tallButton) ||
-            e.getSource().equals(thinButton) ||
-            e.getSource().equals(wideButton);
-      
-      if (consoleCheckbox.isSelected())
+      try
       {
-         System.out.println("--- Start ---");
-      }
-      for (int i = 0; i < controlTableModel.getRowCount(); ++i)
-      {         
-         int columnToAdjust = -1;
-         int adjustValue = 1;
-         try
+         if (e.getSource().equals(alwaysOnTopCheckbox))
          {
-            adjustValue = Integer.parseInt(factorField.getText());         
+            this.setAlwaysOnTop(alwaysOnTopCheckbox.isSelected());
+            return;
          }
-         catch (Exception ex)
+         
+         boolean sizeMode = 
+               e.getSource().equals(shortButton) ||
+               e.getSource().equals(tallButton) ||
+               e.getSource().equals(thinButton) ||
+               e.getSource().equals(wideButton);
+         
+         if (consoleCheckbox.isSelected())
          {
-            adjustValue = 1;
-            factorField.setText("1");
+            System.out.println("--- Start ---");
          }
-         if (controlTableModel.getValueAt(i, 0) == (Boolean.TRUE))
-         {
-            if (
-                  e.getSource().equals(upButton) || 
-                  e.getSource().equals(downButton) || 
-                  e.getSource().equals(shortButton) || 
-                  e.getSource().equals(tallButton))
+         for (int i = 0; i < controlTableModel.getRowCount(); ++i)
+         {         
+            int columnToAdjust = -1;
+            int adjustValue = 1;
+            try
             {
-               columnToAdjust = sizeMode ? 6 : 4;
-               if (upButton.equals(e.getSource()) || shortButton.equals(e.getSource()))
-               {
-                  adjustValue *= -1;
-               }
+               adjustValue = Integer.parseInt(factorField.getText());         
             }
-            else if (
-                  e.getSource().equals(leftButton) || 
-                  e.getSource().equals(rightButton) ||
-                  e.getSource().equals(thinButton) ||
-                  e.getSource().equals(wideButton))
+            catch (Exception ex)
             {
-               columnToAdjust = sizeMode ? 5 : 3;
-               if (leftButton.equals(e.getSource()) || thinButton.equals(e.getSource()))
-               {
-                  adjustValue *= -1;
-               }
+               adjustValue = 1;
+               factorField.setText("1");
             }
-            
-            if (columnToAdjust > 2)
+            if (controlTableModel.getValueAt(i, 0) == (Boolean.TRUE))
             {
-               int existingValue = (int)controlTableModel.getValueAt(i, columnToAdjust);            
-               controlTableModel.setValueAt((existingValue + adjustValue), i, columnToAdjust);
-               controlTableModel.fireTableCellUpdated(i, columnToAdjust);
+               if (
+                     e.getSource().equals(upButton) || 
+                     e.getSource().equals(downButton) || 
+                     e.getSource().equals(shortButton) || 
+                     e.getSource().equals(tallButton))
+               {
+                  columnToAdjust = sizeMode ? 6 : 4;
+                  if (upButton.equals(e.getSource()) || shortButton.equals(e.getSource()))
+                  {
+                     adjustValue *= -1;
+                  }
+               }
+               else if (
+                     e.getSource().equals(leftButton) || 
+                     e.getSource().equals(rightButton) ||
+                     e.getSource().equals(thinButton) ||
+                     e.getSource().equals(wideButton))
+               {
+                  columnToAdjust = sizeMode ? 5 : 3;
+                  if (leftButton.equals(e.getSource()) || thinButton.equals(e.getSource()))
+                  {
+                     adjustValue *= -1;
+                  }
+               }
                
-               if (consoleCheckbox.isSelected())
-               {                  
-                  StringBuilder sb = new StringBuilder();
-                  sb.append("  Type=").append(controlTableModel.components[i].getComponent().getClass().getSimpleName()).append(" :: ");
+               if (columnToAdjust > 2)
+               {
+                  int existingValue = (int)controlTableModel.getValueAt(i, columnToAdjust);            
+                  controlTableModel.setValueAt((existingValue + adjustValue), i, columnToAdjust);
+                  controlTableModel.fireTableCellUpdated(i, columnToAdjust);
                   
-                  sb.append(controlTableModel.components[i].getNameOrText());
-                  sb.append(" :: ");
-                  
-                  String boundsText = controlTableModel.components[i].currentPositionText();
-                  sb.append("Position = ").append(boundsText);
-                  
-                  System.out.println(sb.toString());
+                  if (consoleCheckbox.isSelected())
+                  {                  
+                     StringBuilder sb = new StringBuilder();
+                     sb.append("  Type=").append(controlTableModel.components[i].getComponent().getClass().getSimpleName()).append(" :: ");
+                     
+                     sb.append(controlTableModel.components[i].getNameOrText());
+                     sb.append(" :: ");
+                     
+                     String boundsText = controlTableModel.components[i].currentPositionText();
+                     sb.append("Position = ").append(boundsText);
+                     
+                     System.out.println(sb.toString());
+                  }
                }
-            }
-         }         
-      }   
-      if (consoleCheckbox.isSelected())
+            }         
+         }   
+         if (consoleCheckbox.isSelected())
+         {
+            System.out.println("--- End ---");
+         }
+      }
+      catch (Exception ex)
       {
-         System.out.println("--- End ---");
+         // Don't crash the system if something goes wrong.
+         ex.printStackTrace();
       }
    }
 }
