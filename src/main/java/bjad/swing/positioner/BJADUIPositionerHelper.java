@@ -994,16 +994,24 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
             
             StringBuilder selSB = new StringBuilder();
             StringBuilder unSelSB = new StringBuilder();
+            int maxTypeLength = 0;
+            int maxNameLength = 0;
+            int maxBoundsLength = 0;
+            
+            for (int i = 0; i != controlTableModel.getRowCount(); ++i)
+            {
+               maxTypeLength = Math.max(maxTypeLength, controlTableModel.components[i].getComponent().getClass().getSimpleName().length());
+               maxNameLength = Math.max(maxNameLength, controlTableModel.components[i].getNameOrText().length());
+               maxBoundsLength = Math.max(maxBoundsLength, controlTableModel.components[i].currentPositionText().length());
+            }
             for (int i = 0; i != controlTableModel.getRowCount(); ++i)
             {
                StringBuilder sb = new StringBuilder();
-               sb.append("      Type=").append(controlTableModel.components[i].getComponent().getClass().getSimpleName()).append(" :: ");
-               
-               sb.append(controlTableModel.components[i].getNameOrText());
-               sb.append(" :: ");
-               
-               String boundsText = controlTableModel.components[i].currentPositionText();
-               sb.append("Position = ").append(boundsText);
+               sb.append(padString(controlTableModel.components[i].getComponent().getClass().getSimpleName(), maxTypeLength, ' '));
+               sb.append(' ');
+               sb.append(padString(controlTableModel.components[i].getNameOrText(), maxNameLength, ' '));
+               sb.append(' ');
+               sb.append(controlTableModel.components[i].currentPositionText());
                
                sb.append(System.lineSeparator());
                
@@ -1019,9 +1027,11 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
                         
             System.out.println("- Positioner Window Closed -");
             System.out.println("---  Start of selected control informaton  ---");
+            System.out.println(buildTitle(maxTypeLength, maxNameLength, maxBoundsLength));
             System.out.print(selSB.toString());
             System.out.println("---   End of selected control informaton   ---");
             System.out.println("--- Start of unselected control informaton ---");
+            System.out.println(buildTitle(maxTypeLength, maxNameLength, maxBoundsLength));
             System.out.print(unSelSB.toString());
             System.out.println("---  End of unselected control informaton  ---");
             System.out.println("- Positioner Output complete -");
@@ -1325,5 +1335,31 @@ class VerticalPositionerWindow extends JDialog implements ActionListener
          // Don't crash the system if something goes wrong.
          ex.printStackTrace();
       }
+   }
+
+   private String padString(String val, int length, char padWith)
+   {
+      StringBuilder sb = new StringBuilder(val);
+      while (sb.length() < length)
+      {
+         sb.append(padWith);
+      }
+      return sb.toString();
+   }
+   
+   private String buildTitle(int typeLength, int nameLength, int boundsLength)
+   {
+      StringBuilder sb = new StringBuilder(padString("Type", typeLength, ' '));
+      sb.append(' ');
+      sb.append(padString("Name/Text", nameLength, ' '));
+      sb.append(' ');
+      sb.append("Position");
+      sb.append(System.lineSeparator());
+      sb.append(padString("", typeLength, '-'));
+      sb.append(' ');
+      sb.append(padString("", nameLength, '-'));
+      sb.append(' ');
+      sb.append(padString("", boundsLength, '-'));
+      return sb.toString();
    }
 }
