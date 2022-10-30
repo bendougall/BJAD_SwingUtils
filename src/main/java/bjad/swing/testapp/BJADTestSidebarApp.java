@@ -680,21 +680,17 @@ class DropdownDemoPanel extends AbstractBJADNavPanel implements ItemListener, Ca
       int toIndex = toDropdown.getSelectedIndex();
       
       BigDecimal fromAmount = tempField.getDecimalValue();
+      BigDecimal result = fromAmount;
       switch (fromIndex)
       {
       case 0:
          switch (toIndex)
-         {
-         case 0:
-            resultField.setValue(fromAmount.stripTrailingZeros());
-            break;
+         {          
          case 1:
-            BigDecimal result = fromAmount.multiply(new BigDecimal(9)).divide(new BigDecimal(5)).add(new BigDecimal(32));
-            resultField.setValue(result.stripTrailingZeros());
+            result = fromAmount.multiply(new BigDecimal(9)).divide(new BigDecimal(5)).add(new BigDecimal(32));            
             break;
          case 2:
             result = fromAmount.add(new BigDecimal("273.15"));
-            resultField.setValue(result.stripTrailingZeros());
             break;
          }         
          break;
@@ -703,16 +699,11 @@ class DropdownDemoPanel extends AbstractBJADNavPanel implements ItemListener, Ca
          {
          case 0:
             BigDecimal factor = new BigDecimal("5.0000").divide(new BigDecimal("9.0000"), 15, RoundingMode.HALF_UP);
-            BigDecimal result = fromAmount.subtract(new BigDecimal(32)).multiply(factor);
-            resultField.setValue(result.stripTrailingZeros());
-            break;
-         case 1:
-            resultField.setValue(fromAmount.stripTrailingZeros());            
+            result = fromAmount.subtract(new BigDecimal(32)).multiply(factor);
             break;
          case 2:
             factor = new BigDecimal("5.0000").divide(new BigDecimal("9.0000"), 15, RoundingMode.HALF_UP);
             result = fromAmount.subtract(new BigDecimal(32)).multiply(factor).add(new BigDecimal("273.15"));
-            resultField.setValue(result.stripTrailingZeros());
             break;
          }         
          break;
@@ -720,20 +711,16 @@ class DropdownDemoPanel extends AbstractBJADNavPanel implements ItemListener, Ca
          switch (toIndex)
          {
          case 0:
-            BigDecimal result = fromAmount.subtract(new BigDecimal("273.15"));
-            resultField.setValue(result.stripTrailingZeros());
+            result = fromAmount.subtract(new BigDecimal("273.15"));
             break;
          case 1:
             BigDecimal factor = new BigDecimal("9.0000").divide(new BigDecimal("5.0000"), 15, RoundingMode.HALF_UP);
-            result = fromAmount.subtract(new BigDecimal("273.15")).multiply(factor).add(new BigDecimal("32"));
-            resultField.setValue(result.stripTrailingZeros());     
-            break;
-         case 2:
-            
-            resultField.setValue(fromAmount.stripTrailingZeros());       
+            result = fromAmount.subtract(new BigDecimal("273.15")).multiply(factor).add(new BigDecimal("32"));     
             break;
          }         
          break;
       }
+      
+      resultField.setValue(result.stripTrailingZeros());
    }
 }
