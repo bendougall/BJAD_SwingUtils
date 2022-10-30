@@ -114,7 +114,14 @@ public class NumericTextField extends AbstractRestrictiveTextField
     */
    public void setValue(Number val)
    {
-      super.setText(val.toString());
+      if (val instanceof BigDecimal)
+      {
+         super.setText(((BigDecimal)val).toPlainString());
+      }
+      else
+      {
+         super.setText(val.toString());
+      }
    }
    
    /**
@@ -184,6 +191,15 @@ public class NumericTextField extends AbstractRestrictiveTextField
    public boolean isFieldEmpty()
    {
       return this.getTextContent().trim().isEmpty();
+   }
+   
+   /**
+    * Wipes the text from the field as setText is blocked to the 
+    * programmer with this class.
+    */
+   public void clearField()
+   {
+      super.setText("");
    }
    
    /** 

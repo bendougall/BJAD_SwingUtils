@@ -7,6 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,7 +27,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 
+import bjad.swing.BJADComboBox;
 import bjad.swing.CountryDropdown;
 import bjad.swing.DateEntryField;
 import bjad.swing.DateTimeTextField;
@@ -94,6 +101,12 @@ public class BJADTestSidebarApp extends JFrame
       entry.setOrdinial(0);
       module.getEntries().add(entry);
       entry.setNavPanel(new DateEntryPanel());
+      
+      entry = new BJADModuleEntry();
+      entry.setDisplayName("Dropdown Demo");
+      entry.setOrdinial(0);
+      module.getEntries().add(entry);
+      entry.setNavPanel(new DropdownDemoPanel());
       modules.add(module);
       
       setContentPane(new BJADSidebarNavContentPane(modules, SidebarSectionBehaviour.ALL_SECTIONS_ALWAYS_EXPANDED));
@@ -128,7 +141,7 @@ class TextFieldEntryPanel extends AbstractBJADNavPanel
    private TextField noRestrictionsField = new TextField();
    private TextField abcdeField = new TextField();
    private TextField maxLengthField = new TextField();
-   private CountryDropdown countryDropdown = CountryDropdown.createDropdownFromPackagedISO3166List();
+   
    
    public TextFieldEntryPanel()
    {
@@ -164,15 +177,10 @@ class TextFieldEntryPanel extends AbstractBJADNavPanel
       maxLengthField.setMaxLength(3);
       content.add(pane);
       
-      pane = new JPanel(new BorderLayout(5,5));
-      lbl = new JLabel("Country Dropdown");
-      lbl.setPreferredSize(new Dimension(150, 35));
-      pane.add(lbl, BorderLayout.WEST);
-      pane.add(countryDropdown, BorderLayout.CENTER);
-      content.add(pane);
-      
       this.add(content, BorderLayout.NORTH);
       this.add(new JLabel(""), BorderLayout.CENTER);
+      
+      
    }
    @Override
    public String getPanelTitle()
@@ -542,6 +550,190 @@ class PositionerDemoPanel extends AbstractBJADNavPanel implements ComponentListe
    @Override
    public void componentHidden(ComponentEvent e)
    {      
+   }   
+}
+
+class DropdownDemoPanel extends AbstractBJADNavPanel implements ItemListener, CaretListener
+{
+   private static final long serialVersionUID = -5886406219517070554L;
+   
+   static String[] UNITS = new String[] 
+         {
+               "Celsius",
+               "Fahrenheit",
+               "Kelvin"
+         };
+   
+   private CountryDropdown countryDropdown = CountryDropdown.createDropdownFromPackagedISO3166List();
+   private NumericTextField tempField = NumericTextField.newDecimalFieldNoLimits();
+   private NumericTextField resultField = NumericTextField.newDecimalFieldNoLimits();
+   private BJADComboBox<String> fromDropdown = new BJADComboBox<>(UNITS);
+   private BJADComboBox<String> toDropdown = new BJADComboBox<>(UNITS);
+   
+   private String oldValue = "0";
+   
+   public DropdownDemoPanel()
+   {
+      super();
+      setLayout(new BorderLayout());
+      
+      JPanel content = new JPanel(true);
+      content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+      JPanel pane = new JPanel(new BorderLayout(5,5));
+      JLabel lbl = new JLabel("Country Dropdown");
+      lbl.setPreferredSize(new Dimension(150, 35));
+      pane.add(lbl, BorderLayout.WEST);
+      pane.add(countryDropdown, BorderLayout.CENTER);
+      content.add(pane);
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("Temp to Convert");
+      lbl.setPreferredSize(new Dimension(150, 35));
+      pane.add(lbl, BorderLayout.WEST);
+      pane.add(tempField, BorderLayout.CENTER);
+      pane.add(fromDropdown, BorderLayout.EAST);
+      content.add(pane);
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("Conversion Result");
+      lbl.setPreferredSize(new Dimension(150, 35));
+      
+      toDropdown.setPreferredSize(new Dimension(150, 35));
+      fromDropdown.setPreferredSize(new Dimension(150, 35));
+      
+      pane.add(lbl, BorderLayout.WEST);
+      pane.add(resultField, BorderLayout.CENTER);
+      pane.add(toDropdown, BorderLayout.EAST);
+      
+      content.add(pane);
+      
+      tempField.setValue(0.00);
+      oldValue = tempField.getDecimalValue().toPlainString();
+      resultField.setValue(32.0);
+      resultField.setEditable(false);
+      fromDropdown.setSelectedIndex(0);
+      toDropdown.setSelectedIndex(1);
+      
+      countryDropdown.setSelectedIndex(-1);
+      countryDropdown.setPlaceholderText("Select a country");
+      
+      this.add(content, BorderLayout.NORTH);
+      this.add(new JLabel(""), BorderLayout.CENTER);
+      
+      fromDropdown.addItemListener(this);
+      toDropdown.addItemListener(this);
+      
+      tempField.addCaretListener(this);
    }
    
+   @Override
+   public String getPanelTitle()
+   {
+      return "Combobox Field Demo";
+   }
+   @Override
+   public JComponent getComponentForDefaultFocus()
+   {      
+      return countryDropdown;
+   }
+   @Override
+   public void onPanelDisplay()
+   {
+            
+   }
+   @Override
+   public boolean canPanelClose()
+   {
+      return true;
+   }
+   @Override
+   public void onPanelClosed()
+   {    
+      
+   }
+
+   @Override
+   public void caretUpdate(CaretEvent e)
+   {
+      String temp = tempField.isFieldEmpty() ? "" : tempField.getDecimalValue().toPlainString();
+      if (!temp.equals(oldValue))
+      {
+         doConversion();
+         oldValue = temp;
+      }
+   }
+   
+   @Override
+   public void itemStateChanged(ItemEvent e)
+   {
+      doConversion();
+   }
+   
+   private void doConversion()
+   {
+      if (tempField.isFieldEmpty())
+      {
+         resultField.clearField();
+         return;
+      }
+      int fromIndex = fromDropdown.getSelectedIndex();
+      int toIndex = toDropdown.getSelectedIndex();
+      
+      BigDecimal fromAmount = tempField.getDecimalValue();
+      switch (fromIndex)
+      {
+      case 0:
+         switch (toIndex)
+         {
+         case 0:
+            resultField.setValue(fromAmount.stripTrailingZeros());
+            break;
+         case 1:
+            BigDecimal result = fromAmount.multiply(new BigDecimal(9)).divide(new BigDecimal(5)).add(new BigDecimal(32));
+            resultField.setValue(result.stripTrailingZeros());
+            break;
+         case 2:
+            result = fromAmount.add(new BigDecimal("273.15"));
+            resultField.setValue(result.stripTrailingZeros());
+            break;
+         }         
+         break;
+      case 1:
+         switch (toIndex)
+         {
+         case 0:
+            BigDecimal factor = new BigDecimal("5.0000").divide(new BigDecimal("9.0000"), 15, RoundingMode.HALF_UP);
+            BigDecimal result = fromAmount.subtract(new BigDecimal(32)).multiply(factor);
+            resultField.setValue(result.stripTrailingZeros());
+            break;
+         case 1:
+            resultField.setValue(fromAmount.stripTrailingZeros());            
+            break;
+         case 2:
+            factor = new BigDecimal("5.0000").divide(new BigDecimal("9.0000"), 15, RoundingMode.HALF_UP);
+            result = fromAmount.subtract(new BigDecimal(32)).multiply(factor).add(new BigDecimal("273.15"));
+            resultField.setValue(result.stripTrailingZeros());
+            break;
+         }         
+         break;
+      case 2:
+         switch (toIndex)
+         {
+         case 0:
+            BigDecimal result = fromAmount.subtract(new BigDecimal("273.15"));
+            resultField.setValue(result.stripTrailingZeros());
+            break;
+         case 1:
+            BigDecimal factor = new BigDecimal("9.0000").divide(new BigDecimal("5.0000"), 15, RoundingMode.HALF_UP);
+            result = fromAmount.subtract(new BigDecimal("273.15")).multiply(factor).add(new BigDecimal("32"));
+            resultField.setValue(result.stripTrailingZeros());     
+            break;
+         case 2:
+            
+            resultField.setValue(fromAmount.stripTrailingZeros());       
+            break;
+         }         
+         break;
+      }
+   }
 }

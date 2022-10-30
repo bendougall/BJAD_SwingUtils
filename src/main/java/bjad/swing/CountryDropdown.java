@@ -9,8 +9,6 @@ import java.util.StringTokenizer;
 import java.util.function.Consumer;
 
 import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
-
 import bjad.swing.beans.CountryBean;
 import bjad.swing.beans.ICountryDisplay;
 
@@ -20,7 +18,7 @@ import bjad.swing.beans.ICountryDisplay;
  * @author 
  *   Ben Dougall
  */
-public class CountryDropdown extends JComboBox<CountryBean>
+public class CountryDropdown extends BJADComboBox<CountryBean>
 {
    private static final long serialVersionUID = -6227001906185492195L;
    protected ICountryDisplay displayFormatter = ICountryDisplay.createEnglishDisplaySafeImpl();
