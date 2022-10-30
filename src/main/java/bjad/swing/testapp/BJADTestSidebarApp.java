@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
+import bjad.swing.CountryDropdown;
 import bjad.swing.DateEntryField;
 import bjad.swing.DateTimeTextField;
 import bjad.swing.NumericTextField;
@@ -127,6 +128,7 @@ class TextFieldEntryPanel extends AbstractBJADNavPanel
    private TextField noRestrictionsField = new TextField();
    private TextField abcdeField = new TextField();
    private TextField maxLengthField = new TextField();
+   private CountryDropdown countryDropdown = CountryDropdown.createDropdownFromPackagedISO3166List();
    
    public TextFieldEntryPanel()
    {
@@ -160,6 +162,13 @@ class TextFieldEntryPanel extends AbstractBJADNavPanel
       pane.add(maxLengthField, BorderLayout.CENTER);
       maxLengthField.setName("maxLengthField");
       maxLengthField.setMaxLength(3);
+      content.add(pane);
+      
+      pane = new JPanel(new BorderLayout(5,5));
+      lbl = new JLabel("Country Dropdown");
+      lbl.setPreferredSize(new Dimension(150, 35));
+      pane.add(lbl, BorderLayout.WEST);
+      pane.add(countryDropdown, BorderLayout.CENTER);
       content.add(pane);
       
       this.add(content, BorderLayout.NORTH);
