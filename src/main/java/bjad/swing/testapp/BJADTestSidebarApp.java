@@ -109,7 +109,7 @@ public class BJADTestSidebarApp extends JFrame
       entry.setNavPanel(new DropdownDemoPanel());
       modules.add(module);
       
-      setContentPane(new BJADSidebarNavContentPane(modules, SidebarSectionBehaviour.ALL_SECTIONS_ALWAYS_EXPANDED));
+      setContentPane(new BJADSidebarNavContentPane(modules, SidebarSectionBehaviour.ALL_SHOWN_AND_USER_CAN_COLLAPSE));
    }
    
    /**
